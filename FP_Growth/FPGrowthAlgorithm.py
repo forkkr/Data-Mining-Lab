@@ -64,7 +64,7 @@ class FPGrowth():
                     self.fre_itms[itm] = 1
                 else:
                     self.fre_itms[itm] += 1
-        print(self.fre_itms, ' counts available here...')
+        # print(self.fre_itms, ' counts available here...')
         tmp_dp = []
         for itms in DatasetProcessing.db:
             tmp_itms = []
@@ -119,8 +119,8 @@ class FPGrowth():
         # print(cur_fre_itms, ' at prj gen')
         if cur_fre_itms == []:
             return [], -1
-        print(cur_fre_itms, ' cur_fre_itms at projection and generation')
-        print(cur_header, ' cur_header at projection_and_generation')
+        # print(cur_fre_itms, ' cur_fre_itms at projection and generation')
+        # print(cur_header, ' cur_header at projection_and_generation')
         for itm in cur_fre_itms:
             suffix_node = cur_header[itm]
             # print('Suffix node : ', itm)
@@ -130,7 +130,7 @@ class FPGrowth():
                 # print(num_itms, ' num_items')
                 patterns = self.pattern_generation_for_single_path(num_itms)
                 # print('Patterns: ', patterns)
-                print('Return from single path : ', patterns)
+                # print('Return from single path : ', patterns)
                 # return 2 ** len(num_itms) - 1
                 return patterns, 0
             else:
@@ -171,7 +171,7 @@ class FPGrowth():
             # self.traverse_conditional_FP_tree(self.root_node, [])
             pattern_count, cnd_fp_tree = self.projection_and_generation()
             pattern_count = self.pattern_generation_for_multi_path(pattern_count, itm)
-            print(' sub total: ', pattern_count, ' for ', itm)
+            # print(' sub total: ', pattern_count, ' for ', itm)
             # total_count += pattern_count
             total_patterns += pattern_count
             # print(' sub total conditional tree : ', cnd_fp_tree+1, ' for ', itm)

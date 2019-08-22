@@ -1,6 +1,5 @@
 
 if __name__ == '__main__':
-    st = 'a b   c'
-    ar = st.split()
-    for a in ar:
-        print(a)
+    st = bin(10)
+    st = st[2::]
+    print(type(st), ' : ', st)
