@@ -1,0 +1,2 @@
+dataset,min_sup,total_candidates,total_patterns,time_required,memory_required
+chess,80.0,8557,8227,359.3903

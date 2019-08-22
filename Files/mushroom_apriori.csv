@@ -1,0 +1,4 @@
+dataset,min_sup,total_candidates,total_patterns,time_required,memory_required
+mushroom,50.0,188,153,8.4313
+mushroom,40.0,893,718,69.7154
+mushroom,30.0,3924,3453,412.5641
