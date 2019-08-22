@@ -92,7 +92,7 @@ class AprioriAlgorithm():
             r = len(dsp.db[trn_id])-1
             got = False
             while l <= r:
-                m = (l+r) // 2
+                m = (l+r) // 2  
                 if int(dsp.db[trn_id][m]) == cur_node.label:
                     cur_node.support += 1
                     got = True
