@@ -9,9 +9,10 @@ class DatasetProcessing():
         pass
 
     def preprocess(self):
+        DatasetProcessing.db = []
         for seq in self.file:
             tns = seq.strip().split()
             # print(tns)
-            self.db.append(tns)
+            DatasetProcessing.db.append(tns)
 
 

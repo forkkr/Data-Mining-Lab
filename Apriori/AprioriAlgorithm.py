@@ -13,13 +13,15 @@ class AprioriAlgorithm():
     cur_label = None
     root_node = None
     cur_local_pattern = []
+    total_pattern = 0
 
     def __init__(self, threshold):
-        self.threshold = threshold
+        self.threshold = threshold*len(dsp.db)
         pass
 
     def apriori_algorithm(self):
         L1, C2 = self.init_fs_gen()
+        self.total_pattern += len(L1)
         # print('L1: item with support count-')
         # for l1 in L1:
         #     print(l1[0], ' : ', l1[1])
@@ -50,6 +52,7 @@ class AprioriAlgorithm():
 
             print('Frequent Pattern for Label', self.cur_label,' :')
             tot_fs = self.print_FS(self.root_node, [])
+            self.total_pattern += tot_fs
             print(tot_fs, self.cur_label)
             if tot_fs <= self.cur_label:
                 break
@@ -63,7 +66,7 @@ class AprioriAlgorithm():
             self.candidate_generation()
             self.cur_label += 1
             print('Candidate Set for Label '+ str(self.cur_label)+' :')
-
+        return self.total_pattern
             # flag -=1
 
     def build(self, cur_node, seq, pos):
