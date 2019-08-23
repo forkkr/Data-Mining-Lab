@@ -3,14 +3,16 @@ class DatasetProcessing():
 
     db = []
     file = None
+    #
+    # def __init__(self, fname):
+    #     self.file = open(fname, 'r')
+    #     pass
 
-    def __init__(self, fname):
-        self.file = open(fname, 'r')
-        pass
-
-    def preprocess(self):
+    @staticmethod
+    def preprocess(fname):
+        file = open(fname, 'r')
         DatasetProcessing.db = []
-        for seq in self.file:
+        for seq in file:
             tns = seq.strip().split()
             # print(tns)
             tmp_tns = []
@@ -18,6 +20,6 @@ class DatasetProcessing():
                 tmp_tns.append(int(itm))
             tmp_tns.sort()
             # print(tmp_tns)
-            self.db.append(tmp_tns)
+            DatasetProcessing.db.append(tmp_tns)
 
 

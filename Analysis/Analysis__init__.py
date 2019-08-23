@@ -35,8 +35,7 @@ if __name__ == '__main__':
         print('Dataset',d)
 
         filename = '../Files/' + d + '.txt'
-        dsp(filename).preprocess()
-        dspf(filename).preprocess()
+
 
         # output_file = '../Files/' + d + '_apriori.csv'
         output_file = '../Files/result_.csv'
@@ -45,6 +44,10 @@ if __name__ == '__main__':
         outf = ffopen(output_file, 'a', title)
 
         for i in range(0,6):
+            dsp.preprocess(filename)
+            dspf.preprocess(filename)
+            # print(len(dsp.db))
+            # print(len(dspf.db))
             minsup = float(input('Enter min_sup in %: '))
 
             if minsup<=0.0:

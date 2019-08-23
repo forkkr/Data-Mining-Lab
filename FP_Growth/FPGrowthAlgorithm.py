@@ -5,18 +5,16 @@ from FP_Growth.DataSet import DatasetProcessing
 
 
 class FPGrowth():
-    threshold = None
-    fre_itms = dict()
-    root_node = None
-    prev_link = dict()
-    init_header = dict()
-    intermediate_header = dict()
-    inter_fre_itms = dict()
-    conditional_fre_itms = dict()
-    conditional_base = []
-
     def __init__(self, thld):
         self.threshold = thld*len(DatasetProcessing.db)
+        self.fre_itms = dict()
+        self.root_node = None
+        self.prev_link = dict()
+        self.init_header = dict()
+        self.intermediate_header = dict()
+        self.inter_fre_itms = dict()
+        self.conditional_fre_itms = dict()
+        self.conditional_base = []
         pass
 
     def fp_growth(self):
@@ -28,6 +26,7 @@ class FPGrowth():
         flag = 0
         self.prev_link = dict()
         self.init_header = dict()
+        # print(DatasetProcessing.db, ' DB')
         for itms in DatasetProcessing.db:
             self.build_fp_tree(self.root_node, itms, flag, 1)
             flag %= 2
@@ -116,6 +115,7 @@ class FPGrowth():
         cur_root_node = self.root_node
         if cur_fre_itms == []:
             return [], -1
+        # print(cur_header)
         for itm in cur_fre_itms:
             suffix_node = cur_header[itm]
             # print('Suffix node : ', itm)
