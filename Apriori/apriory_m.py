@@ -49,7 +49,8 @@ class MyApriory:
             dataset_name = input('Enter Dataset Name: ')
             self.dataset_name = dataset_name
 
-        self.file = file
+
+
         with open(file,'r') as f:
             for transaction in f:
                 if transaction.strip()=='':
@@ -58,6 +59,8 @@ class MyApriory:
                 self.db.append(items)
 
         self.threshold = math.ceil(len(MyApriory.db) * minsup / 100.0)
+
+        self.trie_root = None
 
         output_file = '../Files/'+dataset_name+'_apriori.csv'
         title = 'dataset,min_sup,total_candidates,total_patterns,time_required,memory_required\n'
@@ -296,8 +299,8 @@ class Node():
 
 ###################### CALL HERE ###############
 
-dataset_path = '/home/hhmoon/Dropbox/4-2/DM/Data-Mining-Lab-master/Files/retail_item.txt'
+dataset_path = '../Files/retail_item.txt'
 dataset_name = 'retail'
-thresholds = [1.125, 1.0]
-for th in thresholds:
-    MyApriory(dataset_path,th,dataset_name)
+
+th = float(input('Enter minsup in %: '))
+MyApriory(dataset_path,th,dataset_name)

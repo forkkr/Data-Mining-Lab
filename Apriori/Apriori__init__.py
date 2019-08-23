@@ -4,8 +4,8 @@ from Apriori.DataSet import DatasetProcessing as dsp
 from Apriori.AprioriAlgorithm import AprioriAlgorithm
 
 if __name__ == '__main__':
-    threshold = 0.3
-    filename = '../Files/mushroom.txt'
+    threshold = float(input('Enter min_sup in %: '))/100.0
+    filename = '../Files/retail_item.txt'
     # filename = '../Files/sample.txt'
     # filename = '../Files/chess.txt'
 

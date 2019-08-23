@@ -27,9 +27,9 @@ class AprioriAlgorithm():
     def apriori_algorithm(self):
         L1, C2 = self.init_fs_gen()
         self.total_pattern += len(L1)
-        print('After joining for Label ' + str(1) + ' : ' + str(len(L1)))
-        print('After pruning for Label ' + str(1) + ' : ' + str(len(L1)))
-        print('Frequent Patterns for Label ' + str(1) + ' : ' + str(len(L1)))
+        # print('After joining for Label ' + str(1) + ' : ' + str(len(L1)))
+        # print('After pruning for Label ' + str(1) + ' : ' + str(len(L1)))
+        # print('Frequent Patterns for Label ' + str(1) + ' : ' + str(len(L1)))
 
         # print('L1: item with support count-')
         # for l1 in L1:
