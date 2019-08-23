@@ -38,12 +38,23 @@ class AprioriAlgorithm():
         # print('C2:')
         # for c2 in C2:
         #     print(c2)
+
+        pfmt = '{0:5}  | {1:15} | {2:15} | {3:15}'
+        print('_______', '_________________', '_________________', '_________________')
+        print(pfmt.format('Level', 'After Joining', 'After Pruning', 'Frequent Patterns'))
+        print('_______', '_________________', '_________________', '_________________')
+        print(pfmt.format('L1', '--', '--', len(L1)))
+
         flag = True
         self.candidate = C2
         self.cur_level = 2
         # print('Candidate Set for Label ' + str(self.cur_level) + ' :')
-        print('After joining for Label ' + str(self.cur_level) + ' : ' + str(len(self.candidate)))
-        print('After pruning for Label ' + str(self.cur_level) + ' : ' + str(len(self.candidate)))
+        # print('After joining for Label ' + str(self.cur_level) + ' : ' + str(len(self.candidate)))
+        # print('After pruning for Label ' + str(self.cur_level) + ' : ' + str(len(self.candidate)))
+
+        print_data = ['L'+str(self.cur_level)]
+        print_data.append(len(self.candidate))
+        print_data.append(len(self.candidate))
 
         self.root_node = Node()
         # print(len(self.candidate))
@@ -71,6 +82,7 @@ class AprioriAlgorithm():
             # tmp_time2 = time.time()
             # print(tmp_time2 - tmp_time1, ': time for FPG')
 
+
             # print(' After deletion Traversing: ')
             # self.trie_traversal(self.root_node, [])
 
@@ -81,8 +93,13 @@ class AprioriAlgorithm():
             tot_fp = self.pattern_count
             self.total_pattern += tot_fp
             # print(tot_fp)
-            print('Frequent Patterns for Label',self.cur_level, ':', tot_fp)
+            # print('Frequent Patterns for Label',self.cur_level, ':', tot_fp)
+
+            print_data.append(tot_fp)
+            print(pfmt.format(*print_data))
+
             if tot_fp < self.cur_level:
+                print('patterns', tot_fp,'<',self.cur_level)
                 break
             # self.local_set = []
             self.candidate_count = 0
@@ -99,8 +116,12 @@ class AprioriAlgorithm():
             # self.candidate = []
             # self.candidate_generation()
             self.cur_level += 1
-            print('After joining for Level ' + str(self.cur_level) + ' : ' + str(self.joining_count))
-            print('After pruning for Label ' + str(self.cur_level) + ' : ' + str(self.candidate_count ))
+            # print('After joining for Level ' + str(self.cur_level) + ' : ' + str(self.joining_count))
+            # print('After pruning for Label ' + str(self.cur_level) + ' : ' + str(self.candidate_count ))
+            print_data = []
+            print_data.append('L'+str(self.cur_level))
+            print_data.append(self.joining_count)
+            print_data.append(self.candidate_count)
         return self.total_pattern
 
     def build(self, cur_node, seq, pos):
