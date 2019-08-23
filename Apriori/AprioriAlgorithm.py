@@ -32,6 +32,7 @@ class AprioriAlgorithm():
 
         L1, C2 = self.init_fs_gen()
         self.total_pattern += len(L1)
+        self.total_candidates += len(L1)
         self.total_candidates+=len(C2)
         # print('After joining for Label ' + str(1) + ' : ' + str(len(L1)))
         # print('After pruning for Label ' + str(1) + ' : ' + str(len(L1)))
@@ -49,7 +50,7 @@ class AprioriAlgorithm():
         print('_______', '_________________', '_________________', '_________________')
         print(pfmt.format('Level', 'After Joining', 'After Pruning', 'Frequent Patterns'))
         print('_______', '_________________', '_________________', '_________________')
-        print(pfmt.format('L1', '--', '--', len(L1)))
+        print(pfmt.format('L1', len(L1), len(L1), len(L1)))
 
         flag = True
         self.candidate = C2
