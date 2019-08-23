@@ -27,6 +27,10 @@ class AprioriAlgorithm():
     def apriori_algorithm(self):
         L1, C2 = self.init_fs_gen()
         self.total_pattern += len(L1)
+        print('After joining for Label ' + str(1) + ' : ' + str(len(L1)))
+        print('After pruning for Label ' + str(1) + ' : ' + str(len(L1)))
+        print('Frequent Patterns for Label ' + str(1) + ' : ' + str(len(L1)))
+
         # print('L1: item with support count-')
         # for l1 in L1:
         #     print(l1[0], ' : ', l1[1])
@@ -38,6 +42,7 @@ class AprioriAlgorithm():
         self.candidate = C2
         self.cur_level = 2
         # print('Candidate Set for Label ' + str(self.cur_level) + ' :')
+        print('After joining for Label ' + str(self.cur_level) + ' : ' + str(len(self.candidate)))
         print('After pruning for Label ' + str(self.cur_level) + ' : ' + str(len(self.candidate)))
 
         self.root_node = Node()
@@ -47,42 +52,43 @@ class AprioriAlgorithm():
             self.build(self.root_node, can, 0)
 
         while flag :
-            tmp_time1 = time.time()
+            # tmp_time1 = time.time()
             for i in range(0, len(dsp.db)):
                 # self.single_transaction = dsp.db[i]
                 self.support_update(self.root_node, i)
 
-            tmp_time2 = time.time()
-            print(tmp_time2 - tmp_time1, ': time for support update')
+            # tmp_time2 = time.time()
+            # print(tmp_time2 - tmp_time1, ': time for support update')
 
             # print('Traversing: ')
             # self.trie_traversal(self.root_node, [])
             # self.cur_level_joining_candidate_nodes = []
-            tmp_time1 = time.time()
+            # tmp_time1 = time.time()
             self.pattern_count = 0
             self.frequent_set_generation(self.root_node, 0)
-            tmp_time2 = time.time()
-            print(tmp_time2 - tmp_time1, ': time for FPG')
+            # tmp_time2 = time.time()
+            # print(tmp_time2 - tmp_time1, ': time for FPG')
 
             # print(' After deletion Traversing: ')
             # self.trie_traversal(self.root_node, [])
 
-            print('Frequent Pattern for Label', self.cur_level, ' :')
+
             # tot_fs = self.print_FS(self.root_node, [])
             # self.total_pattern += tot_fs
             # print(tot_fs, self.cur_level)
             tot_fp = self.pattern_count
             self.total_pattern += tot_fp
-            print(tot_fp)
+            # print(tot_fp)
+            print('Frequent Patterns for Label',self.cur_level, ':', tot_fp)
             if tot_fp < self.cur_level:
                 break
             # self.local_set = []
             self.candidate_count = 0
             self.joining_count = 0
-            tmp_time1 = time.time()
+            # tmp_time1 = time.time()
             self.joining(self.root_node, [], 0)
-            tmp_time2 = time.time()
-            print(tmp_time2 - tmp_time1, ': time for joining')
+            # tmp_time2 = time.time()
+            # print(tmp_time2 - tmp_time1, ': time for joining')
             # print('Pre L' + str(self.cur_level) + ' :')
             # for ls in self.local_set:
             #     print(ls)

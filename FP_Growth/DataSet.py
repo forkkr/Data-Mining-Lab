@@ -13,6 +13,11 @@ class DatasetProcessing():
         for seq in self.file:
             tns = seq.strip().split()
             # print(tns)
-            DatasetProcessing.db.append(tns)
+            tmp_tns = []
+            for itm in tns:
+                tmp_tns.append(int(itm))
+            tmp_tns.sort()
+            # print(tmp_tns)
+            self.db.append(tmp_tns)
 
 

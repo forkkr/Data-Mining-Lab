@@ -16,19 +16,13 @@ class ColorFind():
         self.colors['black'] = [0, 0, 0]
         self.colors['white'] = [255, 255, 255]
         self.colors['red'] = [255, 0, 0]
-        self.colors['lime'] = [0, 255, 0]
         self.colors['blue'] = [0, 0, 255]
         self.colors['yellow'] = [255, 255, 0]
-        self.colors['cyan'] = [0, 255, 255]
-        self.colors['magenta'] = [255, 0, 255]
-        self.colors['silver'] = [192, 192, 192]
-        self.colors['gray'] = [128, 128, 128]
         self.colors['maroon'] = [128, 0, 0]
         self.colors['olive'] = [128, 128, 0]
         self.colors['green'] = [0, 128, 0]
         self.colors['purple'] = [128, 0, 128]
         self.colors['navy'] = [0, 0, 128]
-        self.colors['teal'] = [0, 128, 128]
 
     def doFind(self):
         img = Image.open(urlopen(self.link))
@@ -84,5 +78,5 @@ class ColorFind():
 
 
 if __name__ == '__main__':
-    cf = ColorFind('https://d2hsbyxoza91sl.cloudfront.net/media/catalog/product/cache/1/thumbnail/9df78eab33525d08d6e5fb8d27136e95/0/1/0120000021218.jpg').doFind()
+    cf = ColorFind('https://lh3.googleusercontent.com/-W1OKM2eVj4s/XV6PoqTZG2I/AAAAAAAAGaw/syznzrw7Hl4inGNoY1h7gf3QfFPUWPaxACK8BGAs/s0/2019-08-22.jpg?fbclid=IwAR04NoroADCNi9EB0q5b-7HGteZHzBfXdXYNLFzWSksveUJeRiCLXT87_4I').doFind()
     print(cf)
