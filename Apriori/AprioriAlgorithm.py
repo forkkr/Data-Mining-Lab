@@ -54,8 +54,10 @@ class AprioriAlgorithm():
         while flag :
             # tmp_time1 = time.time()
             for i in range(0, len(dsp.db)):
+                # print(dsp.db[i])
                 # self.single_transaction = dsp.db[i]
                 self.support_update(self.root_node, i)
+                # self.updateSupport(self.root_node, dsp.db[i], 0)
 
             # tmp_time2 = time.time()
             # print(tmp_time2 - tmp_time1, ': time for support update')
@@ -134,6 +136,31 @@ class AprioriAlgorithm():
             else:
                 r = m - 1
         return l
+
+    def updateSupport(self, cur_node, itemList, pos):
+        # print(cur_node.label, ' at US')
+        if pos >= len(itemList):
+            return
+        cur_pos = pos
+        # print(cur_node.dscnts.keys())
+        for dscnt in sorted(cur_node.dscnts):
+            dscnt_node = cur_node.dscnts[dscnt]
+            # cur_pos = pos
+            # print(dscnt_node.label, cur_pos,' Dscnt label')
+            while cur_pos < len(itemList):
+                if itemList[cur_pos] == dscnt_node.label:
+                    dscnt_node.support += 1
+                    cur_pos += 1
+                    self.updateSupport(dscnt_node, itemList, cur_pos)
+                    break
+                elif itemList[cur_pos] < dscnt_node.label:
+                    cur_pos += 1
+                else:
+                    break
+
+            # if cur_pos < len(itemList):
+            #
+            #     self.updateSupport(dscnt_node, itemList, cur_pos+1)
 
     # def traverse_trie(self, cur_node, cur_itms):
     #     if cur_node.label is not None:
