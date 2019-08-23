@@ -31,7 +31,7 @@ class FPGrowth():
             flag += 1
         tmp_list = []
 
-        self.print_fp_tree(self.root_node, [])
+        # self.print_fp_tree(self.root_node, [])
 
         for itm in sorted(self.fre_itms, key = self.fre_itms.get, reverse=True):
             if self.fre_itms[itm] >= self.threshold:

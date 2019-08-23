@@ -5,9 +5,9 @@ from FP_Growth.DataSet import DatasetProcessing
 
 if __name__ == '__main__':
     threshold = 0.5
-    # filename = '../Files/mushroom.txt'
+    filename = '../Files/mushroom.txt'
     # filename = '../Files/sample.txt'
-    filename = '../Files/chess.txt'
+    # filename = '../Files/chess.txt'
 
     start_time = time.time()
     DatasetProcessing(filename).preprocess()

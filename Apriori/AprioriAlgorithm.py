@@ -1,4 +1,5 @@
 import copy
+import time
 
 from Apriori.DataSet import DatasetProcessing as dsp
 
@@ -10,10 +11,14 @@ class AprioriAlgorithm():
     cur_trns = list()
     local_set = []
     candidate = []
-    cur_label = None
+    cur_level = None
     root_node = None
     cur_local_pattern = []
     total_pattern = 0
+    cur_level_joining_candidate_nodes = []
+    joining_count = 0
+    candidate_count = 0
+    pattern_count = 0
 
     def __init__(self, threshold):
         self.threshold = threshold*len(dsp.db)
@@ -25,94 +30,113 @@ class AprioriAlgorithm():
         # print('L1: item with support count-')
         # for l1 in L1:
         #     print(l1[0], ' : ', l1[1])
-        C2.sort()
+        # C2.sort()
         # print('C2:')
         # for c2 in C2:
         #     print(c2)
         flag = True
         self.candidate = C2
-        self.cur_label = 2
-        print('Candidate Set for Label '+ str(self.cur_label)+' :')
-        self.root_node = Node()
-        while flag :
-            for can in self.candidate:
-                print(can)
-                self.build(self.root_node, can, 0)
+        self.cur_level = 2
+        # print('Candidate Set for Label ' + str(self.cur_level) + ' :')
+        print('After pruning for Label ' + str(self.cur_level) + ' : ' + str(len(self.candidate)))
 
+        self.root_node = Node()
+        # print(len(self.candidate))
+        for can in self.candidate:
+            # print(can)
+            self.build(self.root_node, can, 0)
+
+        while flag :
+            tmp_time1 = time.time()
             for i in range(0, len(dsp.db)):
+                # self.single_transaction = dsp.db[i]
                 self.support_update(self.root_node, i)
 
-            # print('Traversing: ')
-            # self.traverse_trie(self.root_node, [])
-
-            self.frequent_set_generation(self.root_node)
+            tmp_time2 = time.time()
+            print(tmp_time2 - tmp_time1, ': time for support update')
 
             # print('Traversing: ')
-            # self.traverse_trie(self.root_node, [])
+            # self.trie_traversal(self.root_node, [])
+            # self.cur_level_joining_candidate_nodes = []
+            tmp_time1 = time.time()
+            self.pattern_count = 0
+            self.frequent_set_generation(self.root_node, 0)
+            tmp_time2 = time.time()
+            print(tmp_time2 - tmp_time1, ': time for FPG')
 
-            print('Frequent Pattern for Label', self.cur_label,' :')
-            tot_fs = self.print_FS(self.root_node, [])
-            self.total_pattern += tot_fs
-            print(tot_fs, self.cur_label)
-            if tot_fs <= self.cur_label:
+            # print(' After deletion Traversing: ')
+            # self.trie_traversal(self.root_node, [])
+
+            print('Frequent Pattern for Label', self.cur_level, ' :')
+            # tot_fs = self.print_FS(self.root_node, [])
+            # self.total_pattern += tot_fs
+            # print(tot_fs, self.cur_level)
+            tot_fp = self.pattern_count
+            self.total_pattern += tot_fp
+            print(tot_fp)
+            if tot_fp < self.cur_level:
                 break
-            self.local_set = []
+            # self.local_set = []
+            self.candidate_count = 0
+            self.joining_count = 0
+            tmp_time1 = time.time()
             self.joining(self.root_node, [], 0)
-            # print('Pre L' + str(self.cur_label) + ' :')
+            tmp_time2 = time.time()
+            print(tmp_time2 - tmp_time1, ': time for joining')
+            # print('Pre L' + str(self.cur_level) + ' :')
             # for ls in self.local_set:
             #     print(ls)
 
-            self.candidate = []
-            self.candidate_generation()
-            self.cur_label += 1
-            print('Candidate Set for Label '+ str(self.cur_label)+' :')
+
+            # self.candidate = []
+            # self.candidate_generation()
+            self.cur_level += 1
+            print('After joining for Level ' + str(self.cur_level) + ' : ' + str(self.joining_count))
+            print('After pruning for Label ' + str(self.cur_level) + ' : ' + str(self.candidate_count ))
         return self.total_pattern
-            # flag -=1
 
     def build(self, cur_node, seq, pos):
         if pos >= len(seq):
             return
         if seq[pos] in cur_node.dscnts:
-            cur_node.dscnts[seq[pos]].support = 0
+            dscnt_node = cur_node.dscnts[seq[pos]]
+            dscnt_node.support = 0
+            dscnt_node.marker = False
             self.build(cur_node.dscnts[seq[pos]], seq, pos+1)
         else:
             new_node = Node()
             cur_node.dscnts[seq[pos]] = new_node
-            # print(seq[pos], ' at build')
             new_node.label = seq[pos]
             new_node.support = 0
+            new_node.marker = False
             self.build(new_node, seq, pos+1)
 
     def support_update(self, cur_node, trn_id):
-        # print(dsp.db[trn_id], type(cur_node.label))
-        got = False
-        if cur_node.label is not None:
-            # print(cur_node.label, ' cur_node label at support_update')
-            l = 0
-            r = len(dsp.db[trn_id])-1
-            got = False
-            while l <= r:
-                m = (l+r) // 2  
-                if int(dsp.db[trn_id][m]) == cur_node.label:
-                    cur_node.support += 1
-                    got = True
-                    break
-                elif int(dsp.db[trn_id][m]) < cur_node.label:
-                    l = m + 1
-                else:
-                    r = m-1
-        if got or (cur_node.label is None):
-            for dscnt in cur_node.dscnts:
-                self.support_update(cur_node.dscnts[dscnt], trn_id)
-
-    def traverse_trie(self, cur_node, cur_itms):
-        if cur_node.label is not None:
-            cur_itms.append(cur_node.label)
-        if cur_node.marker == True:
-            print(cur_itms, ': ', cur_node.support)
         for dscnt in cur_node.dscnts:
-            self.traverse_trie(cur_node.dscnts[dscnt], copy.deepcopy(cur_itms))
-        return
+            dscnt_node = cur_node.dscnts[dscnt]
+            if dscnt_node.label in dsp.db[trn_id]:
+                dscnt_node.support += 1
+                self.support_update(dscnt_node, trn_id)
+
+    def find_itm(self, cur_lbl, cur_trn, l, r):
+        while l <= r:
+            m = (l + r) // 2
+            if dsp.db[cur_trn][m] == cur_lbl:
+                return m
+            elif dsp.db[cur_trn][m] < cur_lbl:
+                l = m + 1
+            else:
+                r = m - 1
+        return l
+
+    # def traverse_trie(self, cur_node, cur_itms):
+    #     if cur_node.label is not None:
+    #         cur_itms.append(cur_node.label)
+    #     if cur_node.marker == True:
+    #         print(cur_itms, ': ', cur_node.support)
+    #     for dscnt in cur_node.dscnts:
+    #         self.traverse_trie(cur_node.dscnts[dscnt], copy.deepcopy(cur_itms))
+    #     return
 
     def init_fs_gen(self):
         itms_dic = dict()
@@ -142,11 +166,18 @@ class AprioriAlgorithm():
         return
 
     def checking_subpatterns(self, cur_node, cur_set, pos):
-        if pos >= len(cur_set):
-            return True
-        if cur_set[pos] not in cur_node.dscnts:
-            return False
-        return self.checking_subpatterns(cur_node.dscnts[cur_set[pos]], cur_set, pos+1)
+        while pos < len(cur_set):
+            if cur_set[pos] not in cur_node.dscnts:
+                return False
+            cur_node = cur_node.dscnts[cur_set[pos]]
+            pos += 1
+
+        return True
+        # if pos >= len(cur_set):
+        #     return True
+        # if cur_set[pos] not in cur_node.dscnts:
+        #     return False
+        # return self.checking_subpatterns(cur_node.dscnts[cur_set[pos]], cur_set, pos+1)
 
     def apriori_pruning(self):
         for i in range(0, len(self.cur_local_pattern)):
@@ -157,14 +188,17 @@ class AprioriAlgorithm():
                 return False
         return True
 
-    def frequent_set_generation(self, cur_node):
+    def frequent_set_generation(self, cur_node, cur_lvl):
         tmp_dscnts = copy.deepcopy(cur_node.dscnts)
         cur_node.dscnts = dict()
-        if cur_node.label is not None and cur_node.support < self.threshold:
-            cur_node.marker = False
+        if (cur_node.label is not None) and (cur_node.support >= self.threshold) and (cur_lvl == self.cur_level):
+            # self.cur_level_joining_candidate_nodes.append(cur_node)
+            self.pattern_count += 1
+            cur_node.marker = True
         child_no = 0
+        cur_node.support = 0
         for dscnt in tmp_dscnts:
-            ret = self.frequent_set_generation(tmp_dscnts[dscnt])
+            ret = self.frequent_set_generation(tmp_dscnts[dscnt], cur_lvl + 1)
             if ret > 0:
                 child_no += ret
                 cur_node.dscnts[dscnt] = tmp_dscnts[dscnt]
@@ -173,7 +207,7 @@ class AprioriAlgorithm():
     def print_FS(self, cur_node, cur_set):
         if cur_node.label is not None:
             cur_set.append(cur_node.label)
-            if len(cur_set) == self.cur_label:
+            if len(cur_set) == self.cur_level:
                 print(cur_set, " : ", cur_node.support)
                 return 1
         cnt = 0
@@ -181,28 +215,64 @@ class AprioriAlgorithm():
             cnt += self.print_FS(cur_node.dscnts[dscnt], copy.deepcopy(cur_set))
         return cnt
 
+    # def joining(self, cur_node, cur_set, depth):
+    #     if cur_node.label is not None:
+    #         cur_set.append(cur_node.label)
+    #     if depth == self.cur_level - 1:
+    #         itms = list(cur_node.dscnts.keys())
+    #         # print(itms)
+    #         itms.sort()
+    #         # print(itms)
+    #         for i in range(0, len(itms)):
+    #             for j in range(i+1, len(itms)):
+    #                 self.local_set.append(cur_set+[itms[i], itms[j]])
+    #         return
+    #     for dscnt in cur_node.dscnts:
+    #         tmp_cur_set = copy.deepcopy(cur_set)
+    #         self.joining(cur_node.dscnts[dscnt], tmp_cur_set, depth+1)
+
     def joining(self, cur_node, cur_set, depth):
         if cur_node.label is not None:
             cur_set.append(cur_node.label)
-        if depth == self.cur_label - 1:
+        if depth == self.cur_level - 1:
             itms = list(cur_node.dscnts.keys())
             # print(itms)
             itms.sort()
             # print(itms)
             for i in range(0, len(itms)):
                 for j in range(i+1, len(itms)):
-                    self.local_set.append(cur_set+[itms[i], itms[j]])
+                    self.joining_count += 1
+                    self.cur_local_pattern = cur_set+[itms[i], itms[j]]
+                    # print(self.cur_local_pattern, 'cur_local_pattern')
+                    yes = self.apriori_pruning()
+                    if yes == True:
+                        self.candidate_count += 1
+                        self.add_dscnt(cur_node.dscnts[itms[i]], itms[j])
+                    # self.local_set.append(cur_set+[itms[i], itms[j]])
             return
         for dscnt in cur_node.dscnts:
             tmp_cur_set = copy.deepcopy(cur_set)
             self.joining(cur_node.dscnts[dscnt], tmp_cur_set, depth+1)
+
+    def add_dscnt(self, cur_node, dscnt_lbl):
+        dscnt_node = Node()
+        dscnt_node.label = dscnt_lbl
+        cur_node.dscnts[dscnt_lbl] = dscnt_node
+        return
+
+    def trie_traversal(self, cur_node, itms):
+        if cur_node.label is not None:
+            itms.append(cur_node.label)
+        print(itms)
+        for dscnt in cur_node.dscnts:
+            self.trie_traversal(cur_node.dscnts[dscnt], copy.deepcopy(itms))
 
 
 class Node():
 
     def __init__(self):
         self.label = None
-        self.support = 0.0
+        self.support = 0
         self.dscnts = dict()
-        self.marker = True
+        self.marker = False
         self.depth = None
