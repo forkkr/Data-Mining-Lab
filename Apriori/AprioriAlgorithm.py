@@ -20,13 +20,19 @@ class AprioriAlgorithm():
     candidate_count = 0
     pattern_count = 0
 
+    total_candidates=0
+
     def __init__(self, threshold):
         self.threshold = threshold*len(dsp.db)
         pass
 
     def apriori_algorithm(self):
+
+        t1 = time.time()
+
         L1, C2 = self.init_fs_gen()
         self.total_pattern += len(L1)
+        self.total_candidates+=len(C2)
         # print('After joining for Label ' + str(1) + ' : ' + str(len(L1)))
         # print('After pruning for Label ' + str(1) + ' : ' + str(len(L1)))
         # print('Frequent Patterns for Label ' + str(1) + ' : ' + str(len(L1)))
@@ -122,7 +128,16 @@ class AprioriAlgorithm():
             print_data.append('L'+str(self.cur_level))
             print_data.append(self.joining_count)
             print_data.append(self.candidate_count)
-        return self.total_pattern
+            self.total_candidates+=self.candidate_count
+
+        t2 = time.time()
+
+        print('_______', '_________________', '_________________', '_________________')
+
+        print('Total Candidates Generated: ',self.total_candidates)
+        print('Total Patterns Found: ', self.total_pattern)
+        print('Time Required: ',round(t2-t1,4))
+        return [self.total_candidates,self.total_pattern,round(t2-t1,4)]
 
     def build(self, cur_node, seq, pos):
         if pos >= len(seq):

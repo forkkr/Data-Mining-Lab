@@ -1,4 +1,4 @@
-import copy
+import copy,time
 import itertools
 
 from FP_Growth.DataSet import DatasetProcessing
@@ -20,6 +20,9 @@ class FPGrowth():
         pass
 
     def fp_growth(self):
+
+        t1 = time.time()
+
         self.find_frequent_itms()
         self.root_node = TreeNode()
         flag = 0
@@ -41,9 +44,12 @@ class FPGrowth():
         print(self.fre_itms, ' Frequent items at fp_growth')
         # print(self.init_header, ' Initial Header at fp_growth')
         num_of_patterns, num_of_conditional_tree = self.projection_and_generation()
+
+        t2 = time.time()
+
         print('Total Patterns: ', len(num_of_patterns))
         print('Total conditional tree: ', num_of_conditional_tree)
-        return
+        return [num_of_conditional_tree,len(num_of_patterns),round(t2-t1,4)]
 
     def print_fp_tree(self, cur_node, cur_itms):
         if cur_node.label is not None:

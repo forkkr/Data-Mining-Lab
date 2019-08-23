@@ -299,7 +299,7 @@ class Node():
 
 ###################### CALL HERE ###############
 
-dataset_path = '../Files/retail_item.txt'
+dataset_path = '../Files/retail.txt'
 dataset_name = 'retail'
 
 th = float(input('Enter minsup in %: '))
