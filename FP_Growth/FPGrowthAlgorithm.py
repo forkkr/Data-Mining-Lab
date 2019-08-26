@@ -5,6 +5,7 @@ from FP_Growth.DataSet import DatasetProcessing
 
 
 class FPGrowth():
+
     def __init__(self, thld):
         self.threshold = thld*len(DatasetProcessing.db)
         self.fre_itms = dict()
@@ -43,7 +44,7 @@ class FPGrowth():
         self.fre_itms.reverse()
         print(self.fre_itms, ' Frequent items at fp_growth')
         # print(self.init_header, ' Initial Header at fp_growth')
-        num_of_patterns, num_of_conditional_tree = self.projection_and_generation()
+        num_of_patterns, num_of_conditional_tree = self.projection_and_generation(False)
 
         t2 = time.time()
 
@@ -78,8 +79,9 @@ class FPGrowth():
 
         # self.print_fp_tree(self.root_node, [])
 
-        for itm in sorted(self.fre_itms, key=self.fre_itms.get, reverse=True):
+        for itm in sorted(self.fre_itms, key= self.fre_itms.get, reverse=True):
             if self.fre_itms[itm] >= self.threshold:
+                # print(self.fre_itms[itm])
                 tmp_list.append(itm)
 
         self.fre_itms = tmp_list
@@ -126,7 +128,7 @@ class FPGrowth():
         self.build_fp_tree(cur_node.dscnts[prev_itm], itms, flag, support)
     pass
 
-    def projection_and_generation(self):
+    def projection_and_generation(self, single_path):
         cur_fre_itms = copy.deepcopy(self.fre_itms)
         cur_header = self.init_header
         cur_root_node = self.root_node
@@ -145,6 +147,10 @@ class FPGrowth():
                     break
             else:
                 break
+        # if single_path == True:
+        #     num_itms = self.traverse_upward(cur_header[cur_fre_itms[0]])
+        #     patterns = self.pattern_generation_for_single_path(num_itms)
+        #     return patterns, 0
 
         total_patterns = []
         tot_conditional_fp_tree = 0
@@ -182,8 +188,10 @@ class FPGrowth():
             # print('Conditional Tree for ', itm)
             # self.traverse_conditional_FP_tree(self.root_node, [])
             # print('ending print')
-
-            pattern_count, cnd_fp_tree = self.projection_and_generation()
+            # flag = False
+            # if itm_link_cnt == 1:
+            #     flag = True
+            pattern_count, cnd_fp_tree = self.projection_and_generation(flag)
             pattern_count = self.pattern_generation_for_multi_path(pattern_count, itm)
 
             # print(' sub total: ', pattern_count, ' for ', itm)
