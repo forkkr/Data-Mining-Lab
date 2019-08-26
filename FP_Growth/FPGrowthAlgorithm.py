@@ -26,19 +26,20 @@ class FPGrowth():
         flag = 0
         self.prev_link = dict()
         self.init_header = dict()
-        # print(DatasetProcessing.db, ' DB')
+
         for itms in DatasetProcessing.db:
             self.build_fp_tree(self.root_node, itms, flag, 1)
             flag %= 2
             flag += 1
-        tmp_list = []
-
-        # self.print_fp_tree(self.root_node, [])
-
-        for itm in sorted(self.fre_itms, key = self.fre_itms.get, reverse=True):
-            if self.fre_itms[itm] >= self.threshold:
-                tmp_list.append(itm)
-        self.fre_itms = tmp_list
+        # tmp_list = []
+        #
+        # # self.print_fp_tree(self.root_node, [])
+        #
+        # for itm in sorted(self.fre_itms, key=self.fre_itms.get, reverse=True):
+        #     if self.fre_itms[itm] >= self.threshold:
+        #         tmp_list.append(itm)
+        #
+        # self.fre_itms = tmp_list
         self.fre_itms.reverse()
         print(self.fre_itms, ' Frequent items at fp_growth')
         # print(self.init_header, ' Initial Header at fp_growth')
@@ -48,7 +49,7 @@ class FPGrowth():
 
         print('Total Patterns: ', len(num_of_patterns))
         print('Total conditional tree: ', num_of_conditional_tree)
-        return [num_of_conditional_tree,len(num_of_patterns),round(t2-t1,4)]
+        return [num_of_conditional_tree, len(num_of_patterns), round(t2-t1,4)]
 
     def print_fp_tree(self, cur_node, cur_itms):
         if cur_node.label is not None:
@@ -72,20 +73,37 @@ class FPGrowth():
                     self.fre_itms[int(itm)] = 1
                 else:
                     self.fre_itms[int(itm)] += 1
+
+        tmp_list = []
+
+        # self.print_fp_tree(self.root_node, [])
+
+        for itm in sorted(self.fre_itms, key=self.fre_itms.get, reverse=True):
+            if self.fre_itms[itm] >= self.threshold:
+                tmp_list.append(itm)
+
+        self.fre_itms = tmp_list
         tmp_dp = []
         for itms in DatasetProcessing.db:
             tmp_itms = []
-            for itm in itms:
-                itm = int(itm)
-                if self.fre_itms[itm] >= self.threshold:
-                    tmp_itms.append((self.fre_itms[itm], itm))
-            tmp_itms.sort()
+            for itm in self.fre_itms:
+                if itm in itms:
+                    tmp_itms.append(itm)
+
+            # tmp_itms = []
+            # for itm in itms:
+            #     itm = int(itm)
+            #     if self.fre_itms[itm] >= self.threshold:
+            #         tmp_itms.append((self.fre_itms[itm], itm))
+            # tmp_itms.sort()
             if len(tmp_itms):
-                tmp_itms_cur = []
-                for tmp_itm in tmp_itms:
-                    tmp_itms_cur.append(tmp_itm[1])
-                tmp_itms_cur.reverse()
-                tmp_dp.append(tmp_itms_cur)
+                # # tmp_itms_cur = []
+                # # for tmp_itm in tmp_itms:
+                # #     tmp_itms_cur.append(tmp_itm[1])
+                # tmp_itms_cur.reverse()
+                # tmp_dp.append(tmp_itms_cur)
+                # print(tmp_itms)
+                tmp_dp.append(tmp_itms)
         DatasetProcessing.db = tmp_dp
         return
 
@@ -108,22 +126,23 @@ class FPGrowth():
         self.build_fp_tree(cur_node.dscnts[prev_itm], itms, flag, support)
     pass
 
-
     def projection_and_generation(self):
         cur_fre_itms = copy.deepcopy(self.fre_itms)
         cur_header = self.init_header
         cur_root_node = self.root_node
-        if cur_fre_itms == []:
+        if len(cur_root_node.dscnts) == 0:
             return [], -1
-        # print(cur_header)
+
         for itm in cur_fre_itms:
             suffix_node = cur_header[itm]
-            # print('Suffix node : ', itm)
             ret = self.traverse_same_itm_link(suffix_node)
             if ret == 1:
                 num_itms = self.traverse_upward(suffix_node)
-                patterns = self.pattern_generation_for_single_path(num_itms)
-                return patterns, 0
+                if len(num_itms) == len(cur_fre_itms):
+                    patterns = self.pattern_generation_for_single_path(num_itms)
+                    return patterns, 0
+                else:
+                    break
             else:
                 break
 
@@ -134,6 +153,7 @@ class FPGrowth():
 
             self.fre_itms = []
             suffix_node = cur_header[itm]
+            itm_link_cnt = self.traverse_same_itm_link(suffix_node)
             self.root_node = TreeNode()
             self.init_header = dict()
             self.conditional_fre_itms = dict()
@@ -147,22 +167,35 @@ class FPGrowth():
                 if self.conditional_fre_itms[fre_itm] >= self.threshold:
                     self.fre_itms.append(fre_itm)
             flag = 0
+            count_project_trns = 0
+
             for itm_st, support in self.conditional_base:
-                # print(itm_st, support, ' Pushing into FP tree')
-                self.build_conditional_FP_tree(self.root_node, itm_st, flag, support)
+                # print(itm_st, support, ' Pushing into FP tree for', itm)
+                ret = self.build_conditional_FP_tree(self.root_node, itm_st, flag, support)
+                # print(ret, ' :return value')
+                count_project_trns += ret
                 flag %= 2
                 flag += 1
 
             # pattern_count = self.projection_and_generation()
             # pattern_count += 1
+            # print('Conditional Tree for ', itm)
             # self.traverse_conditional_FP_tree(self.root_node, [])
+            # print('ending print')
+
             pattern_count, cnd_fp_tree = self.projection_and_generation()
             pattern_count = self.pattern_generation_for_multi_path(pattern_count, itm)
+
             # print(' sub total: ', pattern_count, ' for ', itm)
             # total_count += pattern_count
             total_patterns += pattern_count
-            # print(' sub total conditional tree : ', cnd_fp_tree+1, ' for ', itm)
             tot_conditional_fp_tree += cnd_fp_tree + 1
+
+            # print(pattern_count, ' sub total conditional tree : ', cnd_fp_tree+1, ' for ', itm)
+
+            # if (itm_link_cnt == 1) and (count_project_trns == 1):
+            #     print(count_project_trns, ln_conditional_base, ' : for ', itm)
+            #     tot_conditional_fp_tree -= 1
         return total_patterns, tot_conditional_fp_tree
 
     def projection_by_itm(self, cur_node):
@@ -180,12 +213,14 @@ class FPGrowth():
             flag += 1
 
     def build_conditional_FP_tree(self, cur_node, itms, flag, support):
+        ret = 0
         if len(itms) == 0:
-            return
+            return ret
         if itms[0] not in self.fre_itms:
             itms.pop(0)
             self.build_conditional_FP_tree(cur_node, itms, flag, support)
-            return
+            return ret
+        ret = 1
         if itms[0] not in cur_node.dscnts:
             cur_node.dscnts[itms[0]] = TreeNode()
             cur_node.dscnts[itms[0]].label =  itms[0]
@@ -204,6 +239,7 @@ class FPGrowth():
         prev_itm = itms[0]
         itms.pop(0)
         self.build_conditional_FP_tree(cur_node.dscnts[prev_itm], itms, flag, support)
+        return ret
 
     # def build_conditional_fp_trie(self, cur_node):
     #     # if cur_node is None:
@@ -217,11 +253,13 @@ class FPGrowth():
     #     return
 
     def traverse_conditional_FP_tree(self, cur_node, itmset):
+        print(itmset)
         if len(cur_node.dscnts) == 0:
-            print(itmset)
+            # print(itmset)
             return
+
         for dscnt in cur_node.dscnts:
-            tmp_itmset = itmset
+            tmp_itmset = copy.deepcopy(itmset)
             tmp_itmset.append(cur_node.dscnts[dscnt].label)
             self.traverse_conditional_FP_tree(cur_node.dscnts[dscnt], tmp_itmset)
 
@@ -264,12 +302,6 @@ class FPGrowth():
             tmp.append(cur_node.label)
             cur_node = cur_node.parent_link
         tmp.reverse()
-
-        # if cur_node.parent_link is None:
-        #     return []
-        # tmp = []
-        # tmp.append(cur_node.label)
-        # tmp += self.traverse_upward(cur_node.parent_link)
         return tmp
 
     def pattern_generation_for_single_path(self, itms):
@@ -295,8 +327,8 @@ class FPGrowth():
         patterns.append(tmp_list)
         return patterns
 
-class TreeNode():
 
+class TreeNode():
     def __init__(self):
         self.label = None
         self.support = 0

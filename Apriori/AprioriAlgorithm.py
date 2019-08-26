@@ -64,39 +64,31 @@ class AprioriAlgorithm():
         print_data.append(len(self.candidate))
 
         self.root_node = Node()
-        # print(len(self.candidate))
         for can in self.candidate:
-            # print(can)
             self.build(self.root_node, can, 0)
 
         while flag :
             # tmp_time1 = time.time()
-            for i in range(0, len(dsp.db)):
-                # print(dsp.db[i])
-                # self.single_transaction = dsp.db[i]
-                self.support_update(self.root_node, i)
-                # self.updateSupport(self.root_node, dsp.db[i], 0)
+            for trns in dsp.db:
+                self.support_update(self.root_node, trns)
+                # self.updateSupport(self.root_node, trns, 0)
 
             # tmp_time2 = time.time()
             # print(tmp_time2 - tmp_time1, ': time for support update')
 
             # print('Traversing: ')
             # self.trie_traversal(self.root_node, [])
-            # self.cur_level_joining_candidate_nodes = []
+
             # tmp_time1 = time.time()
             self.pattern_count = 0
             self.frequent_set_generation(self.root_node, 0)
+
             # tmp_time2 = time.time()
             # print(tmp_time2 - tmp_time1, ': time for FPG')
-
 
             # print(' After deletion Traversing: ')
             # self.trie_traversal(self.root_node, [])
 
-
-            # tot_fs = self.print_FS(self.root_node, [])
-            # self.total_pattern += tot_fs
-            # print(tot_fs, self.cur_level)
             tot_fp = self.pattern_count
             self.total_pattern += tot_fp
             # print(tot_fp)
@@ -108,28 +100,32 @@ class AprioriAlgorithm():
             if tot_fp < self.cur_level:
                 print('patterns', tot_fp,'<',self.cur_level)
                 break
-            # self.local_set = []
+
             self.candidate_count = 0
             self.joining_count = 0
+
             # tmp_time1 = time.time()
             self.joining(self.root_node, [], 0)
+
+            # print('After Joining')
+            # self.trie_traversal(self.root_node, [])
+
+            self.after_joining_deletion(self.root_node, 0)
+
+            # print('After Deletion')
+            # self.trie_traversal(self.root_node, [])
+
             # tmp_time2 = time.time()
             # print(tmp_time2 - tmp_time1, ': time for joining')
-            # print('Pre L' + str(self.cur_level) + ' :')
-            # for ls in self.local_set:
-            #     print(ls)
 
-
-            # self.candidate = []
-            # self.candidate_generation()
             self.cur_level += 1
             # print('After joining for Level ' + str(self.cur_level) + ' : ' + str(self.joining_count))
             # print('After pruning for Label ' + str(self.cur_level) + ' : ' + str(self.candidate_count ))
-            print_data = []
+            print_data = list()
             print_data.append('L'+str(self.cur_level))
             print_data.append(self.joining_count)
             print_data.append(self.candidate_count)
-            self.total_candidates+=self.candidate_count
+            self.total_candidates += self.candidate_count
 
         t2 = time.time()
 
@@ -156,12 +152,13 @@ class AprioriAlgorithm():
             new_node.marker = False
             self.build(new_node, seq, pos+1)
 
-    def support_update(self, cur_node, trn_id):
+    def support_update(self, cur_node, trn):
+        cur_node.marker = False
         for dscnt in cur_node.dscnts:
             dscnt_node = cur_node.dscnts[dscnt]
-            if dscnt_node.label in dsp.db[trn_id]:
+            if dscnt_node.label in trn:
                 dscnt_node.support += 1
-                self.support_update(dscnt_node, trn_id)
+                self.support_update(dscnt_node, trn)
 
     def find_itm(self, cur_lbl, cur_trn, l, r):
         while l <= r:
@@ -262,7 +259,6 @@ class AprioriAlgorithm():
         tmp_dscnts = copy.deepcopy(cur_node.dscnts)
         cur_node.dscnts = dict()
         if (cur_node.label is not None) and (cur_node.support >= self.threshold) and (cur_lvl == self.cur_level):
-            # self.cur_level_joining_candidate_nodes.append(cur_node)
             self.pattern_count += 1
             cur_node.marker = True
         child_no = 0
@@ -272,6 +268,7 @@ class AprioriAlgorithm():
             if ret > 0:
                 child_no += ret
                 cur_node.dscnts[dscnt] = tmp_dscnts[dscnt]
+                cur_node.dscnts[dscnt].marker = False
         return child_no + cur_node.marker
 
     def print_FS(self, cur_node, cur_set):
@@ -302,6 +299,7 @@ class AprioriAlgorithm():
     #         self.joining(cur_node.dscnts[dscnt], tmp_cur_set, depth+1)
 
     def joining(self, cur_node, cur_set, depth):
+        cur_node.marker = False
         if cur_node.label is not None:
             cur_set.append(cur_node.label)
         if depth == self.cur_level - 1:
@@ -325,10 +323,29 @@ class AprioriAlgorithm():
             self.joining(cur_node.dscnts[dscnt], tmp_cur_set, depth+1)
 
     def add_dscnt(self, cur_node, dscnt_lbl):
+        cur_node.marker = False
         dscnt_node = Node()
         dscnt_node.label = dscnt_lbl
         cur_node.dscnts[dscnt_lbl] = dscnt_node
         return
+
+    def after_joining_deletion(self, cur_node, cur_lvl):
+        if cur_node.marker is True:
+            print(cur_node.label, cur_node.marker)
+        tmp_dscnts = copy.deepcopy(cur_node.dscnts)
+        cur_node.dscnts = dict()
+        if (cur_node.label is not None) and (cur_lvl == self.cur_level+1):
+            # self.cur_level_joining_candidate_nodes.append(cur_node)
+            self.pattern_count += 1
+            cur_node.marker = True
+        child_no = 0
+        cur_node.support = 0
+        for dscnt in tmp_dscnts:
+            ret = self.after_joining_deletion(tmp_dscnts[dscnt], cur_lvl + 1)
+            if ret > 0:
+                child_no += ret
+                cur_node.dscnts[dscnt] = tmp_dscnts[dscnt]
+        return child_no + cur_node.marker
 
     def trie_traversal(self, cur_node, itms):
         if cur_node.label is not None:

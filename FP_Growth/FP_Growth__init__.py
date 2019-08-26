@@ -1,5 +1,4 @@
 import time,os,errno
-
 from FP_Growth.FPGrowthAlgorithm import FPGrowth
 from FP_Growth.DataSet import DatasetProcessing
 
@@ -21,16 +20,30 @@ def ffopen(fileLocation, mode, title=None):
     f = open(fileLocation, mode)
     return f
 
+
 if __name__ == '__main__':
 
-    datasets = ['mushroom.txt',
+    datasets = ['sample.txt', 'mushroom.txt',
                 'chess.txt',
                 'retail.txt',
-                'kosarak.txt']
+                'BMS1.txt',
+                'kosarak.txt',
+                'accidents.txt'
+                ]
+    threshold_array = [[30, 50, 60, 70, 80],
+                       [70, 75, 80, 85, 90],
+                       [0.5, 0.75, 1.0, 1.25, 1.5],
+                       [0.2, 0.3, 0.4, 0.5, 0.6],
+                       [0.5, 1, 1.25, 1.5, 2],
+                       [60, 65, 70, 75, 80]
+                       ]
 
+    run_id = 0
     for d in datasets:
         d = d.replace('.txt', '')
         print('Dataset', d)
+        threshold_each = threshold_array[run_id]
+        run_id += 1
         minsup = 100.0
         while minsup > 0:
             minsup = float(input('Enter min_sup in %: '))
@@ -38,7 +51,7 @@ if __name__ == '__main__':
                 break
             threshold = minsup / 100.0
             filename = '../Files/' + d + '.txt'
-            DatasetProcessing(filename).preprocess()
+            DatasetProcessing().preprocess(filename)
 
             output_file = '../Files/result_fp.csv'
             title = 'dataset,min_sup %,No. of Conditional Trees, Total Patterns,FP_Growth time (s)\n'
@@ -61,7 +74,7 @@ if __name__ == '__main__':
     # filename = '../Files/chess.txt'
 
     start_time = time.time()
-    DatasetProcessing(filename).preprocess()
+    DatasetProcessing().preprocess(filename)
     FPGrowth(threshold).fp_growth()
     end_time = time.time()
     print('Total Time: ', end_time - start_time)

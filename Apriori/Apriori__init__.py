@@ -22,7 +22,7 @@ def ffopen(fileLocation, mode, title=None):
 
 if __name__ == '__main__':
 
-    datasets = ['mushroom.txt',
+    datasets = ['sample.txt', 'mushroom.txt',
         'retail.txt',
                 'kosarak.txt']
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
                 break
             threshold = minsup / 100.0
             filename = '../Files/' + d+'.txt'
-            dsp(filename).preprocess()
+            dsp().preprocess(filename)
 
             # output_file = '../Files/' + d + '_apriori.csv'
             output_file = '../Files/result_apriori.csv'
