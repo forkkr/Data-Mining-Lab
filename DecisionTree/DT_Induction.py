@@ -17,8 +17,9 @@ class DecisionTree(object):
 
     def __init__(self, inputFile):
         self.dataset, self.class_details = self.read_data(inputFile)
-        self.attr_labels = ['age', 'income', 'student', 'credit_rating', 'buys_computer']
+        # self.attr_labels = ['age', 'income', 'student', 'credit_rating', 'buys_computer']
         # self.attr_labels = ['outlook', 'temp', 'humidity', 'windy', 'play_tennis']
+        self.attr_labels = ['term', 'home_ownership', 'purpose', 'bad_loan', 'verification_status']
         self.attr_type = [0, 0, 0, 0, 0]
 
         tuple_ids = [i for i in range(0, self.db_size)]
@@ -201,7 +202,7 @@ class DecisionTree(object):
 
     def find_class(self,node,vals):
         if node.isLeaf:
-            print(vals, 'CLASS: ', node.next_nodes[0])
+            print(vals, 'CLASS: ', node.next_nodes[0], node.next_nodes[1])
             return node.next_nodes
         test_attr_id = node.test_attr_id
         test_val = vals[test_attr_id]
@@ -226,7 +227,10 @@ class Node(object):
         self.children = dict()
 
 
-dt = DecisionTree('../DecisionTree/buys_comp.csv')
+# dt = DecisionTree('../DecisionTree/buys_comp.csv')
 # dt = DecisionTree('../DecisionTree/tennis.csv')
-dt.print_all_path()
-dt.classify('youth,high,yes,fair')
+dt = DecisionTree('../DecisionTree/loan_discrete.csv')
+# dt.print_all_path()
+# dt.classify('youth,high,yes,fair')
+dt.classify('60 months,MORTGAGE,debt_consolidation,0')
+
