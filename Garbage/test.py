@@ -1,5 +1,6 @@
 
 if __name__ == '__main__':
-    st = bin(10)
-    st = st[2::]
-    print(type(st), ' : ', st)
+    dic = {'a':6, 'b':3, 'c':4, 'd':6, 'e':8, 'f':7}
+    print(list(dic.values()))
+    lst = sorted(dic.values())
+    print(lst)

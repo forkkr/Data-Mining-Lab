@@ -139,7 +139,8 @@ class FPGrowth():
             suffix_node = cur_header[itm]
             ret = self.traverse_same_itm_link(suffix_node)
             if ret == 1:
-                num_itms = self.traverse_upward(suffix_node)
+                num_itms, chld_no = self.traverse_upward(suffix_node)
+                # if len(num_itms) == len(cur_fre_itms) and (chld_no == 1):
                 if len(num_itms) == len(cur_fre_itms):
                     patterns = self.pattern_generation_for_single_path(num_itms)
                     return patterns, 0
@@ -159,11 +160,12 @@ class FPGrowth():
 
             self.fre_itms = []
             suffix_node = cur_header[itm]
-            itm_link_cnt = self.traverse_same_itm_link(suffix_node)
+            # itm_link_cnt = self.traverse_same_itm_link(suffix_node)
             self.root_node = TreeNode()
             self.init_header = dict()
             self.conditional_fre_itms = dict()
             self.projection_by_itm(suffix_node)
+
             for fre_itm in cur_fre_itms:
                 if fre_itm not in self.conditional_fre_itms:
                     continue
@@ -174,6 +176,33 @@ class FPGrowth():
                     self.fre_itms.append(fre_itm)
             flag = 0
             count_project_trns = 0
+
+            # new_sorted_fre_itms = []
+            # print(self.conditional_fre_itms)
+            # print(sorted(self.conditional_fre_itms, key=self.conditional_fre_itms.get, reverse=True))
+            # for tmp_fre_itm in sorted(self.conditional_fre_itms, key=self.conditional_fre_itms.get, reverse=True):
+            #     if (self.conditional_fre_itms[tmp_fre_itm] >= self.threshold) and (tmp_fre_itm != itm):
+            #         new_sorted_fre_itms.append(tmp_fre_itm)
+            #     # new_sorted_fre_itms.reverse()
+            # print(new_sorted_fre_itms, '  New Sorted Itms')
+            #
+            # new_conditional_base = []
+            # for cur_itm_st, support in self.conditional_base:
+            #     tmp_cd_bs_itm = []
+            #     for tmp_fre_itm in new_sorted_fre_itms:
+            #         if tmp_fre_itm in cur_itm_st:
+            #             tmp_cd_bs_itm.append(tmp_fre_itm)
+            #     # tmp_cd_bs_itm.reverse()
+            #     new_conditional_base.append((tmp_cd_bs_itm, support))
+            # new_sorted_fre_itms.reverse()
+            #
+            # self.fre_itms = new_sorted_fre_itms
+            # for itm_st, support in new_conditional_base:
+            #     ret = self.build_conditional_FP_tree(self.root_node, itm_st, flag, support)
+            #     # print(ret, ' :return value')
+            #     count_project_trns += ret
+            #     flag %= 2
+            #     flag += 1
 
             for itm_st, support in self.conditional_base:
                 # print(itm_st, support, ' Pushing into FP tree for', itm)
@@ -306,11 +335,15 @@ class FPGrowth():
 
     def traverse_upward(self, cur_node):
         tmp = []
+        chld_no = 1
         while cur_node.parent_link is not None:
             tmp.append(cur_node.label)
+            chld_no = max(chld_no, len(cur_node.dscnts))
             cur_node = cur_node.parent_link
         tmp.reverse()
-        return tmp
+        chld_no = max(chld_no, len(cur_node.dscnts))
+        # print(cur_node.label, ' root node label')
+        return tmp, chld_no
 
     def pattern_generation_for_single_path(self, itms):
         all_patterns = []

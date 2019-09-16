@@ -23,12 +23,13 @@ def ffopen(fileLocation, mode, title=None):
 
 if __name__ == '__main__':
 
-    datasets = ['sample.txt', 'mushroom.txt',
+    datasets = ['sample.txt',
+                'accidents.txt',
+                'mushroom.txt',
                 'chess.txt',
                 'retail.txt',
                 'BMS1.txt',
                 'kosarak.txt',
-                'accidents.txt'
                 ]
     threshold_array = [[30, 50, 60, 70, 80],
                        [70, 75, 80, 85, 90],

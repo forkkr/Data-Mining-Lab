@@ -22,9 +22,15 @@ def ffopen(fileLocation, mode, title=None):
 
 if __name__ == '__main__':
 
-    datasets = ['sample.txt', 'mushroom.txt',
-        'retail.txt',
-                'kosarak.txt']
+    datasets = ['sample.txt',
+
+                'accidents.txt',
+                'mushroom.txt',
+                'chess.txt',
+                'retail.txt',
+                'BMS1.txt',
+                'kosarak.txt',
+                ]
 
     for d in datasets:
         d = d.replace('.txt','')
