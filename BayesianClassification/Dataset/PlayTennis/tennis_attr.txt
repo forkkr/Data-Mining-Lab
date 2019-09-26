@@ -1,0 +1,5 @@
+outlook 0
+temp 0
+humidity 0
+windy 0
+play_tennis 0
