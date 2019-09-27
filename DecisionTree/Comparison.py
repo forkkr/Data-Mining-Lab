@@ -21,7 +21,7 @@ if __name__ == '__main__':
     ]
     num_of_folds = 10
     print(len(dataset))
-    for i in range(4, len(dataset)):
+    for i in range(6, len(dataset)):
         print('Dataset Name:', dataset[i][0])
         CV().cross_validation(num_of_folds, dataset[i][1], dataset[i][2], dataset[i][3], dataset[i][4])
 

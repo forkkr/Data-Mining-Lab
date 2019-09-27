@@ -1,12 +1,15 @@
 import numpy as np
 from sklearn.model_selection import KFold
 from DecisionTree.DT__init__ import DT_INIT
+from BayesianClassification.Bayesian import BayesianClassifier
 
 
 class CV():
 
     def cross_validation(self, kfold, num_of_instances, datafilename, attrifile, reverse_order):
         X = np.array([x for x in range(1, num_of_instances+1)])
+
+        TRUE_CLASS = input('Enter True Class Label: ')
 
         kf = KFold(n_splits=kfold, random_state=None, shuffle=True)
         kf.get_n_splits(X)
@@ -34,3 +37,7 @@ class CV():
 
             DT_INIT().run_DT_model('train.data', 'test.data', attrifile, reverse_order)
             print('///////////')
+            bayes = BayesianClassifier('train.data', attrifile, TRUE_CLASS)
+            total, correct, P, TP, FP, accuracy, precision, recall, fscore = bayes.test_run('test.data')
+            print(total, correct,  'accuracy:', accuracy)
+            print(P, TP, FP, precision, recall, fscore)
