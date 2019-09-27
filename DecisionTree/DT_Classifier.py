@@ -4,7 +4,7 @@ import math
 
 class DecisionTreeClassifier():
 
-    def __init__(self, dtst, atrr_file):
+    def __init__(self, dtst, atrr_file, reverse_order):
         self.dataset_file = open(dtst, 'r')
         self.attr_file = open(atrr_file, 'r')
         self.attribute_typ_dict = dict()
@@ -14,14 +14,20 @@ class DecisionTreeClassifier():
         self.current_partition = list()
         self.cur_attr_lbl = list()
         self.root_node = None
+        self.reverse_order = reverse_order
         return
 
     def preprocess(self):
         for attr_info in self.attr_file:
+            attr_info.replace('\n', '')
             attr_info = attr_info.split(' ')
+            # print(attr_info)
             self.attribute_label.append(str(attr_info[0]))
+            if self.reverse_order == 1:
+                self.attribute_label.reverse()
             self.attribute_typ_dict[str(attr_info[0])] = int(attr_info[1])
             # where 0 indicates discrete and 1 for continuous valued attribute
+
         for tuple_info in self.dataset_file:
             # print(tuple_info)
             tuple_info = tuple_info.replace('\n', '').replace('\r', '')
@@ -29,6 +35,8 @@ class DecisionTreeClassifier():
             # print(tuple_info, ' after splitting')
 
             if len(tuple_info) == len(self.attribute_label):
+                if self.reverse_order == 1:
+                    tuple_info.reverse()
                 self.init_dataset.append(copy.deepcopy(tuple_info))
                 for i in range(0, len(self.attribute_label)):
                     if self.attribute_label[i] not in self.attribute_val_dict:
@@ -49,12 +57,12 @@ class DecisionTreeClassifier():
         self.root_node = Node(None, None, False, None)
         # (self, attr_typ, attr, lf_mkr, cl_lbl):
         # print(self.current_partition)
-        print(self.cur_attr_lbl, ' Printing at induction')
+        # print(self.cur_attr_lbl, ' Printing at induction')
 
         self.tree_build(self.root_node)
 
-        print(' Decision Tree: ')
-        self.traverse_decision_tree(self.root_node)
+        # print(' Decision Tree: ')
+        # self.traverse_decision_tree(self.root_node)
         return
 
     def tree_build(self, cur_node):
@@ -67,7 +75,7 @@ class DecisionTreeClassifier():
             cur_node.class_label = self.get_class()
             return
         elif ret_val == 1:
-            print('major voting code at here tree build')
+            # print('major voting code at here tree build')
             cur_node.leaf_marker = True
             cur_node.class_label = self.major_voting()
             return
@@ -368,18 +376,51 @@ class DecisionTreeClassifier():
 
     def classifier(self, tst_fle):
         self.test_file = open(tst_fle, 'r')
+        prediction_dic = dict()
+        total_TP = 0
+        total_cases =0
+        # print('Test tuple: ')
         for tuple_info in self.test_file:
+            # print(tuple_info)
+
             tuple_info = tuple_info.replace('\n', '').replace('\r', '')
             tuple_info = tuple_info.split(',')
+            # print(tuple_info, len(tuple_info))
+            if len(tuple_info) == 0:
+                continue
+            total_cases += 1
+            if self.reverse_order == 1:
+                tuple_info.reverse()
+            # print('current tuple: ', tuple_info)
             found_class = self.find_class_for_tuple(self.root_node, tuple_info)
-            if found_class != tuple_info[len(tuple_info)-1]:
-                print(found_class, " Predicted vs Actual ", tuple_info[len(tuple_info)-1])
+            if found_class not in prediction_dic:
+                prediction_dic[found_class] = dict()
+                prediction_dic[found_class]['TP'] = 0
+                prediction_dic[found_class]['FP'] = 0
+                prediction_dic[found_class]['FN'] = 0
 
+            if tuple_info[len(tuple_info)-1] not in prediction_dic:
+                prediction_dic[tuple_info[len(tuple_info)-1]] = dict()
+                prediction_dic[tuple_info[len(tuple_info) - 1]]['TP'] = 0
+                prediction_dic[tuple_info[len(tuple_info) - 1]]['FP'] = 0
+                prediction_dic[tuple_info[len(tuple_info) - 1]]['FN'] = 0
+
+            if found_class == tuple_info[len(tuple_info)-1]:
+                total_TP += 1
+                prediction_dic[found_class]['TP'] += 1
+
+            elif found_class != tuple_info[len(tuple_info)-1]:
+                prediction_dic[found_class]['FP'] += 1
+                prediction_dic[tuple_info[len(tuple_info)-1]]['FN'] += 1
+                # print(found_class, " Predicted vs Actual ", tuple_info[len(tuple_info)-1])
+
+        print('Accuracy of this model: ', round(self.calculate_accuracy(total_cases, total_TP), 4))
 
     def find_class_for_tuple(self, cur_node, gvn_tpl):
         if cur_node.leaf_marker == True:
             return cur_node.class_label
         indx = self.attribute_label.index(cur_node.attribute)
+        # print(gvn_tpl, len(gvn_tpl), cur_node.attribute)
         val_key = gvn_tpl[indx]
         if self.attribute_typ_dict[cur_node.attribute] == 1:
             val_key = float(val_key)
@@ -389,7 +430,15 @@ class DecisionTreeClassifier():
                 return self.find_class_for_tuple(cur_node.descendents['>'], gvn_tpl)
 
         else:
+            # print(cur_node.descendents)
             return self.find_class_for_tuple(cur_node.descendents[val_key], gvn_tpl)
+
+    def calculate_accuracy(self, tc, tp):
+        print('Total test case: ', tc, ' Total TP: ', tp)
+        return (tp/tc)*100.0
+
+    def calculate_f_measure(self):
+        return
 
 
 class Node():

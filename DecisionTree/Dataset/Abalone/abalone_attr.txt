@@ -1,0 +1,9 @@
+Sex 0
+Length 1
+Diameter 1
+Height 1
+Whole_weight 1
+Shucked_weight 1
+Viscera_weight 1
+Shell_weight 1
+Rings 1

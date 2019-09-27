@@ -1,0 +1,10 @@
+Class 0
+age 0
+menopause 0
+tumor-size 0
+inv-nodes 0
+node-caps 0
+deg-malig 0
+breast 0
+breast-quad 0
+irradiat 0

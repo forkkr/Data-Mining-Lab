@@ -1,6 +1,9 @@
 
 if __name__ == '__main__':
-    dic = {'a':6, 'b':3, 'c':4, 'd':6, 'e':8, 'f':7}
-    print(list(dic.values()))
-    lst = sorted(dic.values())
-    print(lst)
+    a, b, c =[int (x) for x in input().split()]
+    if a==b and b==c:
+        print('Equilateral Triangle')
+    elif (a==b) or (b==c) or (c==a):
+        print('Isosceles Triangle')
+    else:
+        print('Bad Triangle')
