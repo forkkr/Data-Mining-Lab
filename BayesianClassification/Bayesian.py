@@ -182,9 +182,7 @@ class BayesianClassifier:
         print('accuracy', round(correct * 1.0 / total, 4), 'precision', round(precision, 4),
               'recall', round(recall, 4), 'F-score', round(F_score, 4))
 
-        return total, correct, P, TP, FP, \
-               round(correct * 1.0 / total, 4), round(precision, 4), \
-               round(recall, 4), round(F_score, 4)
+        return total, correct, P, TP, FP, round(correct * 1.0 / total, 4), round(precision, 4), round(recall, 4), round(F_score, 4)
         pass
 
     def classify(self, vals):
