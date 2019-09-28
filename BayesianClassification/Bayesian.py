@@ -66,11 +66,17 @@ class BayesianClassifier:
 
         tid = 0
         for entry in self.dataset_file:
-            tid += 1
+
             entry = entry.strip().replace('\n', '').replace('\r', '')
             if entry == '' or entry is None:
                 break
             xk_values = entry.split(',')
+
+            if '?' in xk_values:
+                print('missing values', xk_values)
+                continue
+
+            tid += 1
             self.db.append(xk_values)
             self.dbSize += 1
 
@@ -154,6 +160,10 @@ class BayesianClassifier:
             for line in tf:
                 line = line.replace('\n', '').replace('\r', '').strip()
                 vals = line.split(',')
+                if '?' in vals:
+                    print('missing value in test')
+                    continue
+
                 actual = vals[len(vals) - 1]
 
                 # print(actual, self.true_class, actual == self.true_class)
