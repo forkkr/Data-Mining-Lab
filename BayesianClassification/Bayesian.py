@@ -73,7 +73,7 @@ class BayesianClassifier:
             xk_values = entry.split(',')
 
             if '?' in xk_values:
-                print('missing values', xk_values)
+                # print('missing values', xk_values)
                 continue
 
             tid += 1
@@ -161,7 +161,8 @@ class BayesianClassifier:
                 line = line.replace('\n', '').replace('\r', '').strip()
                 vals = line.split(',')
                 if '?' in vals:
-                    print('missing value in test')
+                    # print(vals)
+                    # print('missing value in test')
                     continue
 
                 actual = vals[len(vals) - 1]

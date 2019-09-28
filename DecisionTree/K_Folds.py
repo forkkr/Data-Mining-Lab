@@ -6,10 +6,10 @@ from BayesianClassification.Bayesian import BayesianClassifier
 
 class CV():
 
-    def cross_validation(self, kfold, num_of_instances, datafilename, attrifile, reverse_order):
+    def cross_validation(self, kfold, num_of_instances, datafilename, attrifile, reverse_order, true_class):
         X = np.array([x for x in range(1, num_of_instances+1)])
 
-        TRUE_CLASS = input('Enter True Class Label: ')
+        TRUE_CLASS = true_class
 
         kf = KFold(n_splits=kfold, random_state=None, shuffle=True)
         kf.get_n_splits(X)
@@ -35,9 +35,12 @@ class CV():
             testfile.close()
             datafile.close()
 
-            DT_INIT().run_DT_model('train.data', 'test.data', attrifile, reverse_order)
-            print('///////////')
+            total_dt, correct_dt, P_dt, TP_dt, FP_dt, time_dt = DT_INIT().run_DT_model('train.data', 'test.data', attrifile, reverse_order, TRUE_CLASS)
+            # print('///////////')
+            print(total_dt, correct_dt, P_dt, TP_dt, FP_dt, round(time_dt, 4))
             bayes = BayesianClassifier('train.data', attrifile, TRUE_CLASS)
             total, correct, P, TP, FP, accuracy, precision, recall, fscore = bayes.test_run('test.data')
             print(total, correct,  'accuracy:', accuracy)
             print(P, TP, FP, precision, recall, fscore)
+
+            print('\n Done Old one and Begin New one\n')

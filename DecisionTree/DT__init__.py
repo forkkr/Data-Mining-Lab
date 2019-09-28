@@ -4,16 +4,17 @@ from DecisionTree.DT_Classifier import DecisionTreeClassifier
 
 class DT_INIT():
 
-    def run_DT_model(self, dataset_file, tst_file, attr_file, reverse_order):
+    def run_DT_model(self, dataset_file, tst_file, attr_file, reverse_order, true_class):
         start_time = time.time()
-        DTc = DecisionTreeClassifier(dataset_file, attr_file, reverse_order)
+        DTc = DecisionTreeClassifier(dataset_file, attr_file, reverse_order, true_class)
         DTc.induction()
         mid_time = time.time()
-        print("Time at build phase: ", mid_time - start_time)
-        DTc.classifier(tst_file)
+        # print("Time at build phase: ", mid_time - start_time)
+        tot, accurate, P, TP, FP = DTc.classifier(tst_file)
         end_time = time.time()
-        print('Time at classify phase: ', end_time - mid_time)
-        print('Total time: ', end_time - start_time)
+        # print('Time at classify phase: ', end_time - mid_time)
+        # print('Total time: ', end_time - start_time)
+        return tot, accurate, P, TP, FP, end_time-start_time
 
 
 

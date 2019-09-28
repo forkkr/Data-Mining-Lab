@@ -4,7 +4,7 @@ import math
 
 class DecisionTreeClassifier():
 
-    def __init__(self, dtst, atrr_file, reverse_order):
+    def __init__(self, dtst, atrr_file, reverse_order, true_class):
         self.dataset_file = open(dtst, 'r')
         self.attr_file = open(atrr_file, 'r')
         self.attribute_typ_dict = dict()
@@ -15,6 +15,8 @@ class DecisionTreeClassifier():
         self.cur_attr_lbl = list()
         self.root_node = None
         self.reverse_order = reverse_order
+        self.true_class = true_class
+        # print(reverse_order, ' : order')
         return
 
     def preprocess(self):
@@ -34,7 +36,7 @@ class DecisionTreeClassifier():
             tuple_info = tuple_info.split(',')
             # print(tuple_info, ' after splitting')
 
-            if len(tuple_info) == len(self.attribute_label):
+            if (len(tuple_info) == len(self.attribute_label)) and ('?' not in tuple_info):
                 if self.reverse_order == 1:
                     tuple_info.reverse()
                 self.init_dataset.append(copy.deepcopy(tuple_info))
@@ -66,25 +68,24 @@ class DecisionTreeClassifier():
         return
 
     def tree_build(self, cur_node):
-        # print('attr: ', self.cur_attr_lbl)
         ret_val = self.base_case_checking()
-        # print(ret_val, ' base case checking function returned value!')
+
         # where 0 for same class, 1 for empty attribute list and -1 for other cases
         if ret_val == 0:
             cur_node.leaf_marker = True
-            cur_node.class_label = self.get_class()
+            cur_node.class_label, cur_node.instance_count = self.get_class()
             return
+
         elif ret_val == 1:
             # print('major voting code at here tree build')
             cur_node.leaf_marker = True
-            cur_node.class_label = self.major_voting()
+            cur_node.class_label, cur_node.instance_count, mx = self.major_voting()
             return
-        # print('CODE HERE')
+
         tmp_cur_partition = copy.deepcopy(self.current_partition)
         tmp_cur_attr_lbl = copy.deepcopy(self.cur_attr_lbl)
 
         selected_attr, attr_type, splitting_point = self.attribute_selection()
-        # print(selected_attr, attr_type, splitting_point, ' Selected info')
 
         if attr_type == 1:
             cur_node.attribute_type = 1
@@ -92,22 +93,25 @@ class DecisionTreeClassifier():
             cur_node.splitting_point = splitting_point
 
             partition_dic = self.dataset_partition_for_continuous(selected_attr, splitting_point)
+
             self.current_partition = copy.deepcopy(tmp_cur_partition)
             self.cur_attr_lbl = copy.deepcopy(tmp_cur_attr_lbl)
+
             self.current_partition = self.get_partition(partition_dic[0], selected_attr)
-            # print(self.cur_attr_lbl, ' before ')
             self.cur_attr_lbl.pop(selected_attr)
-            # print(self.cur_attr_lbl, ' After')
 
             if len(self.current_partition) == 0:
                 self.current_partition = tmp_cur_partition  # major voting in parent's partition
-                major = self.major_voting()
+                major, tot, mx = self.major_voting()
                 new_node = Node(None, None, True, major)
                 cur_node.descendents['<='] = new_node
+                new_node.instance_count = max(mx, 0.0000001)
+                cur_node.instance_count += mx
             else:
                 new_node = Node(None, None, False, None)
                 cur_node.descendents['<='] = new_node
                 self.tree_build(new_node)
+                cur_node.instance_count += cur_node.descendents['<='].instance_count
 
             self.current_partition = copy.deepcopy(tmp_cur_partition)
             self.cur_attr_lbl = copy.deepcopy(tmp_cur_attr_lbl)
@@ -116,19 +120,23 @@ class DecisionTreeClassifier():
 
             if len(self.current_partition) == 0:
                 self.current_partition = tmp_cur_partition  # major voting in parent's partition
-                major = self.major_voting()
+                major, tot, mx = self.major_voting()
                 new_node = Node(None, None, True, major)
                 cur_node.descendents['>'] = new_node
+                new_node.instance_count = max(mx, 0.0000001)
+                cur_node.instance_count += mx
             else:
                 new_node = Node(None, None, False, None)
                 cur_node.descendents['>'] = new_node
                 self.tree_build(new_node)
+                cur_node.instance_count += cur_node.descendents['>'].instance_count
 
         else:
             cur_node.attribute_type = 0
             cur_node.attribute = tmp_cur_attr_lbl[selected_attr]
-            # print(cur_node.attribute, '  <----- SELECTED')
+
             partition_dic = self.dataset_partition_for_discrete(selected_attr)
+
             for attr_val in self.attribute_val_dict[tmp_cur_attr_lbl[selected_attr]]:
                 self.current_partition = copy.deepcopy(tmp_cur_partition)
                 self.cur_attr_lbl = copy.deepcopy(tmp_cur_attr_lbl)
@@ -136,19 +144,21 @@ class DecisionTreeClassifier():
                     self.current_partition = dict()
                 else:
                     self.current_partition = self.get_partition(partition_dic[attr_val], selected_attr)
-                # print(self.cur_attr_lbl, ' Before')
+
                 self.cur_attr_lbl.pop(selected_attr)
-                # print(self.cur_attr_lbl, ' After')
 
                 if len(self.current_partition) == 0:
                     self.current_partition = tmp_cur_partition  # major voting in parent's partition
-                    major = self.major_voting()
+                    major, tot, mx = self.major_voting()
                     new_node = Node(None, None, True, major)
                     cur_node.descendents[attr_val] = new_node
+                    new_node.instance_count = max(mx, 0.0000001)
+                    cur_node.instance_count += mx
                 else:
                     new_node = Node(None, None, False, None)
                     cur_node.descendents[attr_val] = new_node
                     self.tree_build(new_node)
+                    cur_node.instance_count += cur_node.descendents[attr_val].instance_count
 
         # self.traverse_decision_tree(self.root_node)
         return
@@ -337,12 +347,12 @@ class DecisionTreeClassifier():
             if cnt_class[cls] > mx:
                 mx = cnt_class[cls]
                 major = cls
-        return major
+        return major, int(len(self.current_partition)), mx
 
     def get_class(self):
         for tuple in self.current_partition:
             cls = tuple[len(tuple)-1]
-            return cls
+            return cls, int(len(self.current_partition))
 
     def base_case_checking(self):
         # if len(self.cur_attr_lbl) == 1:
@@ -386,25 +396,30 @@ class DecisionTreeClassifier():
             tuple_info = tuple_info.replace('\n', '').replace('\r', '')
             tuple_info = tuple_info.split(',')
             # print(tuple_info, len(tuple_info))
-            if len(tuple_info) == 0:
+            if len(tuple_info) == 0 or ('?' in tuple_info):
+                # print(tuple_info)
                 continue
             total_cases += 1
             if self.reverse_order == 1:
                 tuple_info.reverse()
             # print('current tuple: ', tuple_info)
             found_class = self.find_class_for_tuple(self.root_node, tuple_info)
+
             if found_class not in prediction_dic:
                 prediction_dic[found_class] = dict()
                 prediction_dic[found_class]['TP'] = 0
                 prediction_dic[found_class]['FP'] = 0
                 prediction_dic[found_class]['FN'] = 0
+                prediction_dic[found_class]['P'] = 0
 
             if tuple_info[len(tuple_info)-1] not in prediction_dic:
                 prediction_dic[tuple_info[len(tuple_info)-1]] = dict()
                 prediction_dic[tuple_info[len(tuple_info) - 1]]['TP'] = 0
                 prediction_dic[tuple_info[len(tuple_info) - 1]]['FP'] = 0
                 prediction_dic[tuple_info[len(tuple_info) - 1]]['FN'] = 0
+                prediction_dic[tuple_info[len(tuple_info) - 1]]['P'] = 0
 
+            prediction_dic[tuple_info[len(tuple_info) - 1]]['P'] += 1
             if found_class == tuple_info[len(tuple_info)-1]:
                 total_TP += 1
                 prediction_dic[found_class]['TP'] += 1
@@ -414,15 +429,19 @@ class DecisionTreeClassifier():
                 prediction_dic[tuple_info[len(tuple_info)-1]]['FN'] += 1
                 # print(found_class, " Predicted vs Actual ", tuple_info[len(tuple_info)-1])
 
-        print('Accuracy of this model: ', round(self.calculate_accuracy(total_cases, total_TP), 4))
+        return total_cases, total_TP, prediction_dic[self.true_class]['P'], prediction_dic[self.true_class]['TP'], prediction_dic[self.true_class]['FP']
+        # print('Accuracy of this model: ', round(self.calculate_accuracy(total_cases, total_TP), 4))
 
     def find_class_for_tuple(self, cur_node, gvn_tpl):
+
         if cur_node.leaf_marker == True:
             return cur_node.class_label
         indx = self.attribute_label.index(cur_node.attribute)
         # print(gvn_tpl, len(gvn_tpl), cur_node.attribute)
         val_key = gvn_tpl[indx]
-        if self.attribute_typ_dict[cur_node.attribute] == 1:
+        if int(self.attribute_typ_dict[cur_node.attribute]) == 1:
+            if ('?' == val_key) or (type(val_key) != float):
+                return self.find_class_for_missing_value_tuple(cur_node, gvn_tpl)[0]
             val_key = float(val_key)
             if val_key <= cur_node.splitting_point:
                 return self.find_class_for_tuple(cur_node.descendents['<='], gvn_tpl)
@@ -431,7 +450,50 @@ class DecisionTreeClassifier():
 
         else:
             # print(cur_node.descendents)
+            if val_key not in cur_node.descendents:
+                return self.find_class_for_missing_value_tuple(cur_node, gvn_tpl)[0]
             return self.find_class_for_tuple(cur_node.descendents[val_key], gvn_tpl)
+
+    def find_class_for_missing_value_tuple(self, cur_node, gvn_tpl):
+
+        if cur_node.leaf_marker == True:
+            return [cur_node.class_label, 1]
+
+        indx = self.attribute_label.index(cur_node.attribute)
+        val_key = gvn_tpl[indx]
+
+        if int(self.attribute_typ_dict[cur_node.attribute]) == 1:
+            if ('?' == val_key) or (type(val_key) != float):
+                ret_tuple_1 = self.find_class_for_missing_value_tuple(cur_node.descendents['<='], gvn_tpl)
+                ret_tuple_2 = self.find_class_for_missing_value_tuple(cur_node.descendents['>'], gvn_tpl)
+                if ret_tuple_1[1] > ret_tuple_2[1]:
+                    ret_tuple_1[1] *= (max(cur_node.descendents['<='].instance_count, 0.000001)/ cur_node.instance_count)
+                    return ret_tuple_1
+                else:
+                    ret_tuple_2[1] *= (max(cur_node.descendents['>'].instance_count, 0.000001) / cur_node.instance_count)
+                    return ret_tuple_2
+            val_key = float(val_key)
+            if val_key <= cur_node.splitting_point:
+                ret_tuple = self.find_class_for_missing_value_tuple(cur_node.descendents['<='], gvn_tpl)
+                ret_tuple[1] *= (max(cur_node.descendents['<='].instance_count, 0.000001)/ cur_node.instance_count)
+                return ret_tuple
+            else:
+                ret_tuple = self.find_class_for_tuple(cur_node.descendents['>'], gvn_tpl)
+                ret_tuple *= (max(cur_node.descendents['>'].instance_count, 0.000001) / cur_node.instance_count)
+                return ret_tuple
+        else:
+            if val_key not in cur_node.descendents:
+                mx_tuple = ['', 0.0]
+                for dscnt in cur_node.descendents:
+                    ret_tuple = self.find_class_for_missing_value_tuple(cur_node.descendents[dscnt], gvn_tpl)
+                    ret_tuple[1] *= (max(cur_node.descendents[dscnt].instance_count, 0.000001)/cur_node.instance_count)
+                    if mx_tuple[1] < ret_tuple[1]:
+                        mx_tuple = ret_tuple
+                return mx_tuple
+            else:
+                mx_tuple = self.find_class_for_missing_value_tuple(cur_node.descendents[val_key], gvn_tpl)
+                mx_tuple[1] *= (max(cur_node.descendents[val_key].instance_count, 0.000001)/cur_node.instance_count)
+                return mx_tuple
 
     def calculate_accuracy(self, tc, tp):
         print('Total test case: ', tc, ' Total TP: ', tp)
@@ -450,4 +512,5 @@ class Node():
         self.class_label = cl_lbl
         self.descendents = dict()
         self.splitting_point = 0.0
+        self.instance_count = 0
         return
