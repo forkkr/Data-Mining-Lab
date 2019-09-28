@@ -4,7 +4,7 @@ import math
 
 class DecisionTreeClassifier():
 
-    def __init__(self, dtst, atrr_file, reverse_order, true_class):
+    def __init__(self, dtst, atrr_file, reverse_order, true_class, pruning_threshold):
         self.dataset_file = open(dtst, 'r')
         self.attr_file = open(atrr_file, 'r')
         self.attribute_typ_dict = dict()
@@ -16,6 +16,7 @@ class DecisionTreeClassifier():
         self.root_node = None
         self.reverse_order = reverse_order
         self.true_class = true_class
+        self.pruning_threshold = pruning_threshold
         # print(reverse_order, ' : order')
         return
 
@@ -100,7 +101,7 @@ class DecisionTreeClassifier():
             self.current_partition = self.get_partition(partition_dic[0], selected_attr)
             self.cur_attr_lbl.pop(selected_attr)
 
-            if len(self.current_partition) == 0:
+            if len(self.current_partition) <= self.pruning_threshold:
                 self.current_partition = tmp_cur_partition  # major voting in parent's partition
                 major, tot, mx = self.major_voting()
                 new_node = Node(None, None, True, major)
@@ -118,7 +119,7 @@ class DecisionTreeClassifier():
             self.current_partition = self.get_partition(partition_dic[1], selected_attr)
             self.cur_attr_lbl.pop(selected_attr)
 
-            if len(self.current_partition) == 0:
+            if len(self.current_partition) <= self.pruning_threshold:
                 self.current_partition = tmp_cur_partition  # major voting in parent's partition
                 major, tot, mx = self.major_voting()
                 new_node = Node(None, None, True, major)
@@ -147,7 +148,7 @@ class DecisionTreeClassifier():
 
                 self.cur_attr_lbl.pop(selected_attr)
 
-                if len(self.current_partition) == 0:
+                if len(self.current_partition) <= self.pruning_threshold:
                     self.current_partition = tmp_cur_partition  # major voting in parent's partition
                     major, tot, mx = self.major_voting()
                     new_node = Node(None, None, True, major)
@@ -500,7 +501,13 @@ class DecisionTreeClassifier():
         return (tp/tc)*100.0
 
     def calculate_f_measure(self):
+        """ No need to implement """
         return
+
+    def post_pruning(self, threshold):
+        """ will be implemented later """
+        return
+
 
 
 class Node():

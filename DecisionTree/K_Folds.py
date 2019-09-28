@@ -6,7 +6,7 @@ from BayesianClassification.Bayesian import BayesianClassifier
 
 class CV():
 
-    def cross_validation(self, kfold, num_of_instances, datafilename, attrifile, reverse_order, true_class):
+    def cross_validation(self, kfold, num_of_instances, datafilename, attrifile, reverse_order, true_class, pruning_threshold):
         X = np.array([x for x in range(1, num_of_instances+1)])
 
         TRUE_CLASS = true_class
@@ -35,8 +35,9 @@ class CV():
             testfile.close()
             datafile.close()
 
-            total_dt, correct_dt, P_dt, TP_dt, FP_dt, time_dt = DT_INIT().run_DT_model('train.data', 'test.data', attrifile, reverse_order, TRUE_CLASS)
+            total_dt, correct_dt, P_dt, TP_dt, FP_dt, time_dt = DT_INIT().run_DT_model('train.data', 'test.data', attrifile, reverse_order, TRUE_CLASS, pruning_threshold)
             # print('///////////')
+            print(round(correct_dt/total_dt, 4), ' Accuracy of DT\n')
             print(total_dt, correct_dt, P_dt, TP_dt, FP_dt, round(time_dt, 4))
             bayes = BayesianClassifier('train.data', attrifile, TRUE_CLASS)
             total, correct, P, TP, FP, accuracy, precision, recall, fscore = bayes.test_run('test.data')

@@ -4,9 +4,9 @@ from DecisionTree.DT_Classifier import DecisionTreeClassifier
 
 class DT_INIT():
 
-    def run_DT_model(self, dataset_file, tst_file, attr_file, reverse_order, true_class):
+    def run_DT_model(self, dataset_file, tst_file, attr_file, reverse_order, true_class,threshold):
         start_time = time.time()
-        DTc = DecisionTreeClassifier(dataset_file, attr_file, reverse_order, true_class)
+        DTc = DecisionTreeClassifier(dataset_file, attr_file, reverse_order, true_class, threshold)
         DTc.induction()
         mid_time = time.time()
         # print("Time at build phase: ", mid_time - start_time)
