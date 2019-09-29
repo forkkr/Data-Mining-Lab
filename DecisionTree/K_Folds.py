@@ -28,7 +28,7 @@ class CV():
 
         TRUE_CLASS = true_class
         DATASET_NAME = datasetName
-        resultFile = open('result2.csv', 'a')
+        resultFile = open('result_new.csv', 'a')
         header = 'Dataset, Positive Class,k,DT_threshold,' \
                  'Accuracy DT,Accuracy Bayesian,' \
                  'Precision DT, Precision Bayesian,' \
@@ -61,7 +61,7 @@ class CV():
             trainfile = open('train.data', 'w')
             testfile = open('test.data', 'w')
             datafile = open(datafilename, 'r')
-            print("TRAIN:", len(train_index), "TEST:", len(test_index), 'Ratio: ', len(train_index) / len(test_index))
+            # print("TRAIN:", len(train_index), "TEST:", len(test_index), 'Ratio: ', len(train_index) / len(test_index))
             tmp_list = [X[i] for i in train_index]
         train_index = copy.deepcopy(tmp_list)
         tuple_no = 1

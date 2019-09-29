@@ -405,6 +405,14 @@ class DecisionTreeClassifier():
         total_TP = 0
         total_cases =0
         # print('Test tuple: ')
+
+        if self.true_class not in prediction_dic:
+            prediction_dic[self.true_class] = dict()
+            prediction_dic[self.true_class]['TP'] = 0
+            prediction_dic[self.true_class]['FP'] = 0
+            prediction_dic[self.true_class]['FN'] = 0
+            prediction_dic[self.true_class]['P'] = 0
+
         for tuple_info in self.test_file:
             # print(tuple_info)
 
