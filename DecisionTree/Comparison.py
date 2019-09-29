@@ -17,11 +17,14 @@ if __name__ == '__main__':
         ['Census Income', 32561, 'Dataset/Adult/adult.data', 'Dataset/Adult/adult-attr.txt', 0, '>50K']
     ]
     threshold = int(input('Enter pruning threshold(0 means \'without pruning\'): '))
-    num_of_folds = 2
+    num_of_folds = 10
     print(len(dataset))
     for i in range(0, len(dataset)):
-        print('Dataset Name:', dataset[i][0])
-        CV().cross_validation(num_of_folds, dataset[i][1], dataset[i][2], dataset[i][3], dataset[i][4], dataset[i][5], threshold)
+        print('_________________________________')
+        print('Dataset Name:', dataset[i][0], '| Positive Class: ', dataset[i][5])
+        CV().cross_validation(num_of_folds, dataset[i][0], dataset[i][1], dataset[i][2], dataset[i][3], dataset[i][4],
+                              dataset[i][5], threshold)
+
 
 
 

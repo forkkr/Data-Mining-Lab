@@ -1,9 +1,11 @@
-import math, random
+import math, statistics
+
+import numpy as np
 
 
 class BayesianClassifier:
 
-    def __init__(self, dataset, attr_file, true_class):
+    def __init__(self, dataset, attr_file, reverse_order, true_class):
         self.db = list()
         self.dbSize = 0
 
@@ -12,14 +14,17 @@ class BayesianClassifier:
         self.attr_labels = list()
         self.attr_type = list()
         self.attr_vals = dict()
+
+        self.attr_ci_vals = dict()
+        self.mean_std_dict = dict()
         self.sup_xk_ci = dict()
         self.conts_attr_info = dict()
-        self.true_class = None
+        self.reverse_order = reverse_order
+        self.true_class = true_class
         self.false_class = None
 
         self.dataset_file = open(dataset, 'r')
         self.attr_file = open(attr_file, 'r')
-        self.true_class = true_class
 
         self.read_and_process()
 
@@ -28,7 +33,7 @@ class BayesianClassifier:
 
         class_labels = self.ci_tids.keys()
         for c in class_labels:
-            # print(c,self.ci_tids[c],len(self.ci_tids[c]), round(len(self.ci_tids[c])/(self.dbSize * 1.0),4))
+            # print(c, self.ci_tids[c], len(self.ci_tids[c]), round(len(self.ci_tids[c]) / (self.dbSize * 1.0), 4))
             self.ci_size[c] = len(self.ci_tids[c])
 
         # aid_xk_ci = self.sup_xk_ci.keys()
@@ -38,24 +43,31 @@ class BayesianClassifier:
         #     # print(cls,cls_size)
         #     print(axc,round(self.sup_xk_ci[axc]*1.0/cls_size,4))
         #
-        # attrs = self.attr_vals.keys()
+        attrs = self.attr_vals.keys()
         # for a in attrs:
         #     print(self.attr_labels[a], self.attr_vals[a])
 
-        # self.laplacian_correction()
+        # for attr_id in range(0, len(self.attr_labels)):
+        #     if self.attr_type[attr_id] == 1:
+        #         vals = self.attr_vals[attr_id]
+        #         values = []
+        #         for v in vals:
+        #             # print(v)
+        #             values.append(float(v))
+        #
+        #         m, s = self.find_m_s(values)
+        #         print(self.attr_labels[attr_id], values,m,s)
+        #         self.conts_attr_info[attr_id] = (m, s)
 
         for attr_id in range(0, len(self.attr_labels)):
             if self.attr_type[attr_id] == 1:
-                vals = self.attr_vals[attr_id]
-                values = []
-                for v in vals:
-                    # print(v)
-                    values.append(float(v))
-                mean = self.mean(values)
-                stddev = self.stddev(values)
-                self.conts_attr_info[attr_id] = (mean, stddev)
-        # print(self.conts_attr_info)
-        # print(self.gaussian_dist(41,self.conts_attr_info[3][0],self.conts_attr_info[3][1]))
+                for ci in class_labels:
+                    value_array = self.attr_ci_vals[(attr_id,ci)]
+                    # print('Calc m,s:',self.attr_labels[attr_id],ci,value_array)
+                    mean , stddev = self.find_m_s(value_array)
+                    self.mean_std_dict[(attr_id,ci)] = (mean, stddev)
+
+        # print(self.mean_std_dict)
 
     def read_and_process(self):
 
@@ -63,6 +75,12 @@ class BayesianClassifier:
             attr_info = attr_info.split(' ')
             self.attr_labels.append(str(attr_info[0]))
             self.attr_type.append(int(attr_info[1]))
+
+        if self.reverse_order == 1:
+            self.attr_labels.reverse()
+            self.attr_type.reverse()
+            # print(self.attr_labels)
+            # print(self.attr_type)
 
         tid = 0
         for entry in self.dataset_file:
@@ -76,7 +94,13 @@ class BayesianClassifier:
                 # print('missing values', xk_values)
                 continue
 
-            tid += 1
+            if len(xk_values) != len(self.attr_labels):
+                continue
+
+            if self.reverse_order == 1:
+                xk_values.reverse()
+                # print('After', xk_values)
+
             self.db.append(xk_values)
             self.dbSize += 1
 
@@ -93,9 +117,10 @@ class BayesianClassifier:
                 a_typ = self.attr_type[i]
                 a_val = xk_values[i]
 
-                # print(a_label,a_val,end='; ')
+                # print(a_label, a_val, end='; ')
 
                 l = self.attr_vals.get(a_id)
+
                 if l is None:
                     l = list()
                 if a_typ == 0:
@@ -105,46 +130,21 @@ class BayesianClassifier:
                     l.append(a_val)  # allow duplicate to measure mean and variance
                 self.attr_vals[a_id] = l
 
+                if a_typ == 1:
+                    attr_value_list = self.attr_ci_vals.get((a_id, ci))
+                    if attr_value_list is None:
+                        attr_value_list = list()
+                    attr_value_list.append(float(a_val))
+                    self.attr_ci_vals[(a_id,ci)] = attr_value_list
+
+
+
                 if a_typ == 0:
                     '''categorical'''
                     support = self.sup_xk_ci.get((a_id, a_val, ci), 0)
                     self.sup_xk_ci[(a_id, a_val, ci)] = support + 1
+            tid += 1
             # print('-')
-
-    def laplacian_correction(self):
-        aid_xk_ci = self.sup_xk_ci.keys()
-
-        classes = self.ci_tids.keys()
-        for ci in classes:
-            for a_id in range(0, len(self.attr_labels) - 1):
-                need_correction = False
-                if self.attr_type[a_id] == 0:
-                    a_vals = self.attr_vals[a_id]
-                    for xk in a_vals:
-                        if (a_id, xk, ci) not in aid_xk_ci:
-                            # self.sup_xk_ci[(a_id,xk,ci)] = 1
-                            need_correction = True
-                            print('Correction Needed', (self.attr_labels[a_id], xk, ci))
-                            break
-
-                    if need_correction:
-                        for xk in a_vals:
-
-                            if (a_id, xk, ci) not in aid_xk_ci:
-                                self.sup_xk_ci[(a_id, xk, ci)] = 1
-                            else:
-                                self.sup_xk_ci[(a_id, xk, ci)] = self.sup_xk_ci[(a_id, xk, ci)] + 1
-
-                            self.ci_size[ci] = self.ci_size[ci] + 1
-
-        # for axc in aid_xk_ci:
-        #     cls = axc[2]
-        #     cls_size = self.ci_size[cls]
-        #     print(cls,cls_size)
-        #     print(axc,round(self.sup_xk_ci[axc]*1.0/cls_size,4))
-
-    def laplacian_specific_attr(self, attr_id):
-        pass
 
     def test_run(self, testFile):
 
@@ -161,52 +161,64 @@ class BayesianClassifier:
                 line = line.replace('\n', '').replace('\r', '').strip()
                 vals = line.split(',')
                 if '?' in vals:
-                    # print(vals)
                     # print('missing value in test')
+                    # print(vals)
                     continue
+
+                if self.reverse_order == 1:
+                    vals.reverse()
 
                 actual = vals[len(vals) - 1]
 
-                # print(actual, self.true_class, actual == self.true_class)
                 if actual == self.true_class:
+                    # print('P')
                     P += 1
 
                 predicted = self.classify(vals)
+                # print(vals,predicted)
+                # print('')
+
                 total += 1
+
+                # print(actual, predicted, actual == predicted)
+                #s
                 if actual != predicted:
                     if predicted == self.true_class:
+                        # print('FP')
                         FP += 1
                     # print('__________WRONG')
                 # print(actual, predicted)
                 else:
                     if predicted == self.true_class:
+                        # print('TP')
                         TP += 1
                     correct += 1
 
-        print(total, 'correct', correct, 'P', P, 'TP', TP, 'FP', FP)
+        print('total', total, 'correct', correct, 'P', P, 'TP', TP, 'FP', FP)
 
-        if TP or FP:
+        if TP and P:
             precision = (TP * 1.0) / (TP + FP)
             recall = TP * 1.0 / P
             F_score = 2 * precision * recall / (precision + recall)
 
-        print('accuracy', round(correct * 1.0 / total, 4), 'precision', round(precision, 4),
-              'recall', round(recall, 4), 'F-score', round(F_score, 4))
+        # print('accuracy', round(correct * 1.0 / total, 4), 'precision', round(precision, 4),
+        #       'recall', round(recall, 4), 'F-score', round(F_score, 4))
 
-        return total, correct, P, TP, FP, round(correct * 1.0 / total, 4), round(precision, 4), round(recall, 4), round(F_score, 4)
+        return total, correct, P, TP, FP, round(correct * 1.0 / total, 4), round(precision, 4), round(recall, 4), round(
+            F_score, 4)
         pass
 
     def classify(self, vals):
-
-        actual_cls = vals[len(vals) - 1]
 
         predicted_cls = dict()
 
         classes = self.ci_tids.keys()
         for ci in classes:
             cls_size = self.ci_size[ci]
+            # print(ci, cls_size, self.dbSize)
             p_ci = cls_size * 1.0 / self.dbSize
             prob = p_ci
+            # print(ci,p_ci)
             for a_id in range(0, len(vals) - 1):
                 # print(self.attr_labels[a_id])
                 if self.attr_type[a_id] == 0:
@@ -219,45 +231,39 @@ class BayesianClassifier:
                     else:
                         p_xk_ci = supp * 1.0 / cls_size
                 else:
-                    p_xk_ci = self.gaussian_dist(float(vals[a_id]), self.conts_attr_info[a_id][0],
-                                                 self.conts_attr_info[a_id][1])
+                    mean,stddev  = self.mean_std_dict[(a_id,ci)]
+                    p_xk_ci = self.gauss(float(vals[a_id]), mean, stddev)
+                    # print(float(vals[a_id]), mean, stddev, p_xk_ci)
+                    # p_xk_ci = self.g(float(vals[a_id]), self.conts_attr_info[a_id][0], self.conts_attr_info[a_id][1])
                 prob = prob * p_xk_ci
+                # print('Testing',vals[a_id], p_xk_ci,ci, prob)
             predicted_cls[ci] = prob
+            # print('')
             # print(prob)
+
+        # print(predicted_cls)
+        # print('')
 
         v = list(predicted_cls.values())
         k = list(predicted_cls.keys())
         # print(vals, k[v.index(max(v))], round(predicted_cls[k[v.index(max(v))]] * 100, 5), '%')
         return k[v.index(max(v))]
 
-    def gaussian_dist(self, x, mu, dev):
-        # pi = 3.14159 # or math
-        # print(math.pi)
-        # print(math.e)
-        # print(math.pow(math.e,-2))
-        prob = 1.0 / (math.sqrt(2 * math.pi) * dev) * math.pow(math.e, (- (x - mu) * (x - mu) / (2 * dev * dev)))
-        return prob
+    def find_m_s(self, data):
+        return np.mean(data),np.std(data)
+        # return statistics.mean(data), statistics.stdev(data)
 
-    def mean(self, data):
-        """Return the sample arithmetic mean of data."""
-        n = len(data)
-        if n < 1:
-            raise ValueError('mean requires at least one data point')
-        return sum(data) / n  # in Python 2 use sum(data)/float(n)
+    def gauss(self, x, m, sd):
+        dist = 0
+        if sd != 0:
+            dist = 1.0 / (sd * np.sqrt(2 * np.pi)) * np.exp(- (x - m) ** 2 / (2 * sd ** 2))
+        return dist
 
-    def _ss(self, data):
-        """Return sum of square deviations of sequence data."""
-        c = self.mean(data)
-        ss = sum((x - c) ** 2 for x in data)
-        return ss
-
-    def stddev(self, data, ddof=0):
-        """Calculates the population standard deviation
-        by default; specify ddof=1 to compute the sample
-        standard deviation."""
-        n = len(data)
-        if n < 2:
-            raise ValueError('variance requires at least two data points')
-        ss = self._ss(data)
-        pvar = ss / (n - ddof)
-        return pvar ** 0.5
+    def g(self, x, m, s):
+        a1 = math.sqrt(2 * math.pi) * s
+        a1 = 1.0 / a1
+        a2 = (x - m) ** 2
+        a2 /= 2 * (s ** 2)
+        a2 = -a2
+        ret = a1 * math.exp(a2)
+        return ret
