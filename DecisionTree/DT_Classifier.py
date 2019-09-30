@@ -419,7 +419,7 @@ class DecisionTreeClassifier():
             tuple_info = tuple_info.replace('\n', '').replace('\r', '')
             tuple_info = tuple_info.split(',')
             # print(tuple_info, len(tuple_info))
-            if len(tuple_info) == 0 or ('?' in tuple_info):
+            if len(tuple_info) == 0 or ('?' in tuple_info) or (len(tuple_info) < len(self.attribute_label)):
                 # print(tuple_info)
                 continue
             total_cases += 1
@@ -469,9 +469,12 @@ class DecisionTreeClassifier():
                 return self.find_class_for_missing_value_tuple(cur_node, gvn_tpl, cur_node.instance_count)[0]
             val_key = float(val_key)
             if val_key <= float(cur_node.splitting_point):
-
+                if '<=' not in cur_node.descendents:
+                    return self.find_class_for_missing_value_tuple(cur_node, gvn_tpl, cur_node.instance_count)[0]
                 return self.find_class_for_tuple(cur_node.descendents['<='], gvn_tpl)
             else:
+                if '>' not in cur_node.descendents:
+                    return self.find_class_for_missing_value_tuple(cur_node, gvn_tpl, cur_node.instance_count)[0]
                 return self.find_class_for_tuple(cur_node.descendents['>'], gvn_tpl)
 
         else:
@@ -491,8 +494,12 @@ class DecisionTreeClassifier():
 
         if int(self.attribute_typ_dict[cur_node.attribute]) == 1:
             if '?' == val_key:
-                ret_tuple_1 = self.find_class_for_missing_value_tuple(cur_node.descendents['<='], gvn_tpl, cur_node.instance_count)
-                ret_tuple_2 = self.find_class_for_missing_value_tuple(cur_node.descendents['>'], gvn_tpl, cur_node.instance_count)
+                ret_tuple_1 = [-1, -1]
+                ret_tuple_2 = [-1, -1]
+                if '<=' in cur_node.descendents:
+                    ret_tuple_1 = self.find_class_for_missing_value_tuple(cur_node.descendents['<='], gvn_tpl, cur_node.instance_count)
+                if '>' in cur_node.descendents:
+                    ret_tuple_2 = self.find_class_for_missing_value_tuple(cur_node.descendents['>'], gvn_tpl, cur_node.instance_count)
                 if ret_tuple_1[1] > ret_tuple_2[1]:
                     ret_tuple_1[1] *= (max(cur_node.descendents['<='].instance_count, 0.000001)/ cur_node.instance_count)
                     return ret_tuple_1
@@ -501,11 +508,15 @@ class DecisionTreeClassifier():
                     return ret_tuple_2
             val_key = float(val_key)
             if val_key <= cur_node.splitting_point:
+                if '<=' not in cur_node.descendents:
+                    return self.find_class_for_missing_value_tuple(cur_node, gvn_tpl, cur_node.instance_count)
                 ret_tuple = self.find_class_for_missing_value_tuple(cur_node.descendents['<='], gvn_tpl, cur_node.instance_count)
                 # ret_tuple[1] *= (max(cur_node.descendents['<='].instance_count, 0.000001)/ cur_node.instance_count)
                 return ret_tuple
             else:
-                ret_tuple = self.find_class_for_tuple(cur_node.descendents['>'], gvn_tpl)
+                if '>' not in cur_node.descendents:
+                    return self.find_class_for_missing_value_tuple(cur_node, gvn_tpl, cur_node.instance_count)
+                ret_tuple = self.find_class_for_missing_value_tuple(cur_node.descendents['>'], gvn_tpl, cur_node.instance_count)
                 # ret_tuple *= (max(cur_node.descendents['>'].instance_count, 0.000001) / cur_node.instance_count)
                 return ret_tuple
         else:

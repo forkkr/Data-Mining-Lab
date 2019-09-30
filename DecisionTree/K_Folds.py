@@ -28,7 +28,7 @@ class CV():
 
         TRUE_CLASS = true_class
         DATASET_NAME = datasetName
-        resultFile = open('result_new.csv', 'a')
+        resultFile = open('result_new2.csv', 'a')
         header = 'Dataset, Positive Class,k,DT_threshold,' \
                  'Accuracy DT,Accuracy Bayesian,' \
                  'Precision DT, Precision Bayesian,' \
@@ -63,51 +63,52 @@ class CV():
             datafile = open(datafilename, 'r')
             # print("TRAIN:", len(train_index), "TEST:", len(test_index), 'Ratio: ', len(train_index) / len(test_index))
             tmp_list = [X[i] for i in train_index]
-        train_index = copy.deepcopy(tmp_list)
-        tuple_no = 1
-        for tuple_info in datafile:
-            if tuple_no in train_index:
-                # print(tuple_no, tuple_info)
-                trainfile.write(tuple_info)
-            else:
-                testfile.write(tuple_info)
-            tuple_no += 1
+            train_index = copy.deepcopy(tmp_list)
+            tuple_no = 1
+            for tuple_info in datafile:
+                if tuple_no in train_index:
+                    # print(tuple_no, tuple_info)
+                    trainfile.write(tuple_info)
+                else:
+                    testfile.write(tuple_info)
+                tuple_no += 1
 
-        trainfile.close()
-        testfile.close()
-        datafile.close()
+            trainfile.close()
+            testfile.close()
+            datafile.close()
 
-        total_dt, correct_dt, P_dt, TP_dt, FP_dt, time_dt = DT_INIT().run_DT_model('train.data', 'test.data',
-                                                                                   attrifile, reverse_order,
-                                                                                   TRUE_CLASS, pruning_threshold)
-        # total_dt, correct_dt, P_dt, TP_dt, FP_dt, time_dt = 1, 1, 1, 1, 1, 1
-        print('DT: ', total_dt, correct_dt, P_dt, TP_dt, FP_dt, round(time_dt, 4))
-        dt_total.append(total_dt)
-        dt_correct.append(correct_dt)
-        dt_p.append(P_dt)
-        dt_tp.append(TP_dt)
-        dt_fp.append(FP_dt)
-        dt_time.append(time_dt)
+            total_dt, correct_dt, P_dt, TP_dt, FP_dt, time_dt = DT_INIT().run_DT_model('train.data', 'test.data',
+                                                                                       attrifile, reverse_order,
+                                                                                       TRUE_CLASS, pruning_threshold)
+            # total_dt, correct_dt, P_dt, TP_dt, FP_dt, time_dt = 1, 1, 1, 1, 1, 1
+            print('DT: ', total_dt, correct_dt, P_dt, TP_dt, FP_dt, round(time_dt, 4))
+            dt_total.append(total_dt)
+            dt_correct.append(correct_dt)
+            dt_p.append(P_dt)
+            dt_tp.append(TP_dt)
+            dt_fp.append(FP_dt)
+            dt_time.append(time_dt)
 
-        print(round(correct_dt / total_dt, 4), ' Accuracy of DT')
+            print(round(correct_dt / total_dt, 4), ' Accuracy of DT')
 
-        # print('')
+            # print('')
 
-        t1 = time.time()
-        bayes = BayesianClassifier('train.data', attrifile, reverse_order, TRUE_CLASS)
-        t2 = time.time()
-        total_b, correct_b, P_b, TP_b, FP_b, accuracy, precision, recall, fscore = bayes.test_run('test.data')
-        t3 = time.time()
-        time_b = t3 - t1
+            t1 = time.time()
+            bayes = BayesianClassifier('train.data', attrifile, reverse_order, TRUE_CLASS)
+            t2 = time.time()
+            total_b, correct_b, P_b, TP_b, FP_b, accuracy, precision, recall, fscore = bayes.test_run('test.data')
+            t3 = time.time()
+            time_b = t3 - t1
 
-        print('Bayes: ', total_b, correct_b, P_b, TP_b, FP_b, round(time_b, 4))
+            print('Bayes: ', total_b, correct_b, P_b, TP_b, FP_b, round(time_b, 4))
 
-        b_total.append(total_b)
-        b_correct.append(correct_b)
-        b_p.append(P_b)
-        b_tp.append(TP_b)
-        b_fp.append(FP_b)
-        b_time.append(time_b)
+            b_total.append(total_b)
+            b_correct.append(correct_b)
+            b_p.append(P_b)
+            b_tp.append(TP_b)
+            b_fp.append(FP_b)
+            b_time.append(time_b)
+            print('\n ------------------------------ \n')
 
         print('---------------------------------')
 
@@ -115,14 +116,11 @@ class CV():
         dt_info = self.measures(sum(dt_total), sum(dt_correct),
                                 sum(dt_p), sum(dt_tp), sum(dt_fp))
         dt_info.append(sum(dt_time))
-
-        print('DT', self.measures(sum(dt_total), sum(dt_correct),
-                                  sum(dt_p), sum(dt_tp), sum(dt_fp)),
-              'Time: ', sum(dt_time))
-        print('Bayes', self.measures(sum(b_total), sum(b_correct),
-                                     sum(b_p), sum(b_tp), sum(b_fp)),
+        dt_sm = self.measures(sum(dt_total), sum(dt_correct), sum(dt_p), sum(dt_tp), sum(dt_fp))
+        print('Decision Tree: ', 'Accuracy: ', dt_sm[0], 'Precision: ', dt_sm[1], 'Recall: ', dt_sm[2], 'F-score: ', dt_sm[3], 'Time: ', sum(dt_time))
+        dt_sm = self.measures(sum(b_total), sum(b_correct), sum(b_p), sum(b_tp), sum(b_fp))
+        print('Bayesian: ', 'Accuracy: ', dt_sm[0], 'Precision: ', dt_sm[1], 'Recall: ', dt_sm[2], 'F-score: ', dt_sm[3],
               'Time: ', sum(b_time))
-
         b_info = self.measures(sum(b_total), sum(b_correct),
                                sum(b_p), sum(b_tp), sum(b_fp))
         b_info.append(sum(b_time))
