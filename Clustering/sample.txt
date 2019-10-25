@@ -1,0 +1,4 @@
+code_A,3,45
+code_B,1,22
+code_C,2,64
+code_A,3,28
