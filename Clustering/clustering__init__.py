@@ -24,12 +24,13 @@ if __name__ == '__main__':
     # print('Total time: ', end_time-start_time)
 
     file = [
-        [True, 'dataset/Iris/iris.attr', '../Clustering/dataset/Iris/iris.data', '../Clustering/dataset/Iris/iris.class'],
-            [ True, '../Clustering/dataset/glass/glass.attr', '../Clustering/dataset/glass/glass.data', '../Clustering/dataset/glass/glass.class'],
-            [True, '../Clustering/dataset/diabetes/diabetes.attr', '../Clustering/dataset/diabetes/diabetes.data', '../Clustering/dataset/diabetes/diabetes.class'],
-            [True, '../Clustering/dataset/banknote/banknote.attr', '../Clustering/dataset/banknote/banknote.data', '../Clustering/dataset/banknote/banknote.class'],
-            [True, '../Clustering/dataset/aggregation/Aggregation.attr', '../Clustering/dataset/aggregation/Aggregation.data', '../Clustering/dataset/aggregation/Aggregation.class'],
-            [False, '../Clustering/dataset/WholeSale/wholesale.attr', '../Clustering/dataset/WholeSale/Wholesale.csv', '../Clustering/dataset/WholeSale/wholesale.class']
+        # [True, 'dataset/Iris/iris.attr', '../Clustering/dataset/Iris/iris.data', '../Clustering/dataset/Iris/iris.class'],
+        #     [ True, '../Clustering/dataset/glass/glass.attr', '../Clustering/dataset/glass/glass.data', '../Clustering/dataset/glass/glass.class'],
+        #     [True, '../Clustering/dataset/diabetes/diabetes.attr', '../Clustering/dataset/diabetes/diabetes.data', '../Clustering/dataset/diabetes/diabetes.class'],
+        #     [True, '../Clustering/dataset/banknote/banknote.attr', '../Clustering/dataset/banknote/banknote.data', '../Clustering/dataset/banknote/banknote.class'],
+        #     [True, '../Clustering/dataset/aggregation/Aggregation.attr', '../Clustering/dataset/aggregation/Aggregation.data', '../Clustering/dataset/aggregation/Aggregation.class'],
+        #     [False, '../Clustering/dataset/WholeSale/wholesale.attr', '../Clustering/dataset/WholeSale/Wholesale.csv', '../Clustering/dataset/WholeSale/wholesale.class'],
+            [False, '../Clustering/dataset/breast/breast.attr', '../Clustering/dataset/breast/breast.data', '../Clustering/dataset/breast/breast.class']
     ]
 
     for tup in file:
