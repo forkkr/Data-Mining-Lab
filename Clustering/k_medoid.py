@@ -27,32 +27,72 @@ class Medoid():
 
     clusters = dict()
 
-    def __init__(self, kv, af, of):
+    class_label = dict()
+
+    def __init__(self, kv, af, of, cf):
+
+
+        self.attr_labels = list()
+        self.attr_type = dict()
+
+        self.repr_id = dict()
+        self.repr_cost = dict()
+
+        self.repr_set = list()
+        self.non_pr_set = list()
+
+        self.objects = list()
+
+        self.attr_file = None
+        self.object_file = None
+
+        self.k_value = None
+        self.num_obj = None
+
+        self.mx_hf = dict()
+        self.mn_hf = dict()
+        self.mf = dict()
+
+        self.clusters = dict()
+
+        self.class_label = dict()
+
         self.k_value = kv
+        # print(af, of)
         self.attr_file = open(af, 'r')
         self.object_file = open(of, 'r')
+        self.class_file = open(cf, 'r')
         pass
 
     def process_data(self):
+        id = 0
+        for cls in self.class_file:
+            self.class_label[id] = cls
+            id += 1
+
         for tpl in self.attr_file:
+            # print(tpl)
             attrs = tpl.split(' ')
+            # print(attrs, ' AHHHH')
             self.attr_labels.append(attrs[0])
             self.attr_type[attrs[0]] = int(attrs[1])
         for tpl in self.object_file:
-            obj = tpl.split(' ')
+            obj = tpl.split(',')
             self.objects.append(obj)
 
         self.num_obj = len(self.objects)
-        print('Attribute list: ', self.attr_labels)
-        print('Attribute type:', self.attr_type)
-        print('Objects: ', self.objects)
+        # print('Attribute list: ', self.attr_labels)
+        # print('Attribute type:', self.attr_type)
+        # print('Objects: ', self.objects)
         for i in range(0, len(self.attr_labels)):
             if self.attr_type[self.attr_labels[i]] == 0:
                 mn = float('inf')
                 mx = (-1)*float('inf')
 
                 for tuple in self.objects:
+
                     if '?' not in tuple:
+                        # print(len(tuple), tuple)
                         tuple[i] = float(tuple[i])
                         mn = min(mn, tuple[i])
                         mx = max(mx, tuple[i])
@@ -111,13 +151,15 @@ class Medoid():
 
         sum = 0
         count = 0
-
+        # print(self.attr_labels, ' Attribute label')
         for i in range(0, len(self.attr_labels)):
+            # print(self.attr_type[self.attr_labels[i]])
             if self.attr_type[self.attr_labels[i]] == 0:
                 if ('?' not in p_tuple) and ('?' not in oi_tuple):
                     sum += self.numeric_dissimilarity(p_tuple[i], oi_tuple[i], self.attr_labels[i])
                     # print(sum, ' partial')
                     count += 1
+                # print('YES IT is printed.........')
             elif self.attr_type[self.attr_labels[i]] == 1:
                 if ('?' not in p_tuple) and ('?' not in oi_tuple):
                     sum += self.nominal_dissimilarity(p_tuple[i], oi_tuple[i])
@@ -129,6 +171,7 @@ class Medoid():
                     # print(sum, ' partial')
                     count += 1
         if count == 0:
+            # print(' COUNT printed..')
             return float('inf')
         return sum/count
 
@@ -221,35 +264,49 @@ class Medoid():
                 # print('current cost: ', prev_cost)
         return prev_cost
 
-    def run_algorithm(self):
+    def run_algorithm(self, yes_purity):
         self.process_data()
         self.initialize()
         cur_cost = self.assign()
         print(self.repr_id)
-        print('Total Cost: ', cur_cost)
+        # print('Total Cost: ', cur_cost)
         prev_cost = cur_cost+111111111111
         prev_set = []
-        print('Before swapping: ', self.repr_set, self.non_pr_set)
+        # print('Before swapping: ', self.repr_set, self.non_pr_set)
         while prev_set != self.repr_set:
             prev_cost = copy.deepcopy(cur_cost)
             prev_set = copy.deepcopy(self.repr_set)
             cur_cost = self.swap(cur_cost)
             print(prev_set, self.repr_set)
 
-        print('After swapping: ', self.repr_set, self.non_pr_set)
+        # print('After swapping: ', self.repr_set, self.non_pr_set)
         # print(self.repr_id)
-        print('Total Cost: ', cur_cost)
+        # print('Total Cost: ', cur_cost)
         for cr in self.repr_set:
             self.clusters[cr] = []
             self.clusters[cr].append(cr)
         for ncr in self.non_pr_set:
             self.clusters[self.repr_id[ncr]].append(ncr)
         for clky in self.clusters:
-            print(clky, ':', self.clusters[clky])
+            print(clky, ':', len(self.clusters[clky]))
         s_co = self.silhouette_coefficient()
+        sum_s_co = 0
+        cls_total = 0
         for clky in s_co:
-            print(s_co[clky], ' for ', clky)
-        return
+            sum_s_co += s_co[clky]
+            cls_total += len(self.clusters[clky])
+            # print(s_co[clky], ' for ', clky)
+
+        sum_dun_co = 0
+        dun_total = 0
+        dun_co = self.dunn_index()
+        for id in dun_co:
+            sum_dun_co += dun_co[id]
+        dun_total = len(dun_co)
+        if yes_purity:
+            return sum_s_co/cls_total, sum_dun_co/dun_total, self.determine_purity()
+        else:
+            return sum_s_co / cls_total, sum_dun_co / dun_total
 
     def silhouette_coefficient(self):
         a_value = dict()
@@ -282,7 +339,7 @@ class Medoid():
             #     if (ind_b - ind_a)/(max(ind_b, ind_a)) < 0:
             #         print(ind_a, ind_b)
                 s_value[clky] += (ind_b - ind_a)/(max(ind_b, ind_a))
-            s_value[clky] /= (len(self.clusters[clky]))
+            # s_value[clky] /= (len(self.clusters[clky]))
 
         # print(b_value, a_value, s_value)
         return s_value
@@ -302,5 +359,21 @@ class Medoid():
             dunn_value[clky] = separation/diameter
         return dunn_value
 
+    def determine_purity(self):
+        purity_val = 0
 
+        total_instance = 0
 
+        for clky in self.clusters:
+            tmp_dic = dict()
+            total_instance += len(self.clusters[clky])
+            for val_i in self.clusters[clky]:
+                if self.class_label[val_i] not in tmp_dic:
+                    tmp_dic[self.class_label[val_i]] = 0
+                tmp_dic[self.class_label[val_i]] += 1
+            mx_val = 0
+            for cls in tmp_dic:
+                mx_val = max(mx_val, tmp_dic[cls])
+
+            purity_val += mx_val
+        return purity_val/total_instance

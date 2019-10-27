@@ -30,8 +30,8 @@ class DT_INIT():
 #     # attr_file = 'Dataset/Car/car_attr.txt'
 #     # tst_file = 'Dataset/Car/car_tst.data'
 #
-#     dataset_file = 'Dataset/Iris/iris.data'
-#     attr_file = 'Dataset/Iris/iris_attr.txt'
+#     dataset_file = 'Dataset/Iris/iris.txt'
+#     attr_file = 'Dataset/Iris/iris.attr'
 #     tst_file = 'Dataset/Iris/iris_tst.data'
 #
 #     # dataset_file = 'Dataset/Abalone/abalone.data'

@@ -40,8 +40,8 @@ if __name__ == '__main__':
     attr_file = 'Dataset/Car/car_attr.txt'
 
     #
-    # dataset_file = 'Dataset/Iris/iris.data'
-    # attr_file = 'Dataset/Iris/iris_attr.txt'
+    # dataset_file = 'Dataset/Iris/iris.txt'
+    # attr_file = 'Dataset/Iris/iris.attr'
 
     #
     # dataset_file = '../BayesianClassification/Dataset/Mushroom/mushroom.csv'

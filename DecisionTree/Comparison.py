@@ -4,7 +4,7 @@ from DecisionTree.K_Folds import CV
 if __name__ == '__main__':
     dataset = [
         ['Car', 1728, 'Dataset/Car/car.data', 'Dataset/Car/car_attr.txt', 0, 'unacc'],
-        ['Iris', 150, 'Dataset/Iris/iris.data','Dataset/Iris/iris_attr.txt', 0, 'Iris-versicolor'],
+        ['Iris', 150, 'Dataset/Iris/iris.txt','Dataset/Iris/iris.attr', 0, 'Iris-versicolor'],
         # ['Wine Quality', 4898, 'Dataset/WineQuality/winequality.data', 'Dataset/WineQuality/winequality.attr', 0, '5'],
         # ['Breast Cancer Wisconsin', 699, 'Dataset/BreastCancerWisconsin/breast-cancer-wisconsin.data',
         #  'Dataset/BreastCancerWisconsin/breast-cancer-wisconsin.attr', 0, 4],

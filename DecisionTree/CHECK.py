@@ -5,10 +5,10 @@
 #
 # iris = load_iris()
 # clf = tree.DecisionTreeClassifier(criterion="entropy")
-# clf = clf.fit(iris.data, iris.target)
-# print(iris.data)
+# clf = clf.fit(iris.txt, iris.target)
+# print(iris.txt)
 # print(iris.target)
-# tree.plot_tree(clf.fit(iris.data, iris.target))
+# tree.plot_tree(clf.fit(iris.txt, iris.target))
 #
 # plt.show()
 # r = export_text(clf, feature_names=iris['feature_names'])

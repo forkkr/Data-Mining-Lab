@@ -5,13 +5,21 @@ import csv
 
 class k_means:
 
-    def __init__(self,k,filename):
+    class_label = dict()
+
+    def __init__(self,k,filename, cls_file):
         self.K = k
         self.db = list()
         self.clusters = list()  # or dict()
         self.centers = list()     # or dict()
-        self.cluster_dic = dict()
+        self.clusters_dic = dict()
         self.read_file(filename)
+        cls_file = open(cls_file, 'r')
+
+        id = 0
+        for cls in cls_file:
+            self.class_label[id] = cls
+            id += 1
 
 
     def read_file(self, filename):
@@ -111,8 +119,8 @@ class k_means:
                 print('Terminating k-means')
                 break
             centroids = new_centroids
-            self.cluster_dic = copy.deepcopy(clusters)
-        print(self.cluster_dic)
+            self.clusters_dic = copy.deepcopy(clusters)
+        print(self.clusters_dic)
 
     def euclid_distance(self, data_a,data_b):
         a = np.array(data_a)
@@ -129,13 +137,107 @@ class k_means:
 
         return terminate
 
+    def quality_function(self, purity):
+        # for clky in self.cluster_dic:
+        #     for ai in self.cluster_dic[clky]:
+        #         for
+        sil_co = self.silhouette_coefficient()
+        sum_sil_co = 0
+        count_total = 0
+        for idx in sil_co:
+            sum_sil_co += sil_co[idx]
+            count_total += len(self.clusters_dic[idx])
+        dun_co = self.dunn_index()
+        sum_dun_co = 0
+        count_total_dun = len(dun_co)
+        for idx in dun_co:
+            sum_dun_co += dun_co[idx]
 
+        # print(sil_co)
+        # print(dun_co)
+        # print(sum_sil_co, count_total, sum_dun_co, count_total_dun)
+        if purity == False:
+            return sum_sil_co/count_total , sum_dun_co/count_total_dun
+        else:
+            return sum_sil_co / count_total, sum_dun_co / count_total_dun, self.determine_purity()
 
-    def quality_function(self):
-        pass
+    def silhouette_coefficient(self):
+        a_value = dict()
+        b_value = dict()
+        s_value = dict()
+        for clky in self.clusters_dic:
+            a_value[clky] = 5050
+            b_value[clky] = 5050
+            s_value[clky] = 0
+            for val_i in self.clusters_dic[clky]:
+                # print(val_i, ' At sil ', type(val_i))
+                ind_a = 0.0
+                for val_j in self.clusters_dic[clky]:
+                    ind_a += self.euclid_distance(val_i, val_j)
 
-kk = k_means(3, 'dataset/Iris/iris.data')
-# kk = k_means(5,'../k_mean/WholeSale/Wholesale customers data.csv')
-# kk = k_means(3,'../DecisionTree/Dataset/wine/wine.data')
+                ind_a /= (len(self.clusters_dic[clky])-1)
 
-kk.k_means_process(kk.K)
+                ind_b = float('inf')
+                for not_clky in self.clusters_dic:
+                    if clky != not_clky:
+                        tmp_b = 0
+                        for val_k in self.clusters_dic[not_clky]:
+                            tmp_b += self.euclid_distance(val_i, val_k)
+                        tmp_b /= len(self.clusters_dic[not_clky])
+                        ind_b = min(ind_b, tmp_b)
+
+            #     b_value[clky] += ind_b
+            #     a_value[clky] += ind_a
+            # b_value[clky] /= len(self.clusters[clky])
+            # a_value[clky] /= (len(self.clusters[clky])-1)
+            #     if (ind_b - ind_a)/(max(ind_b, ind_a)) < 0:
+            #         print(ind_a, ind_b)
+                s_value[clky] += (ind_b - ind_a)/(max(ind_b, ind_a))
+            # s_value[clky] /= (len(self.clusters_dic[clky]))
+
+        # print(b_value, a_value, s_value)
+        return s_value
+
+    def dunn_index(self):
+        dunn_value = dict()
+        for clky in self.clusters_dic:
+            diameter = float('-inf')
+            separation = float('inf')
+            for ai in self.clusters_dic[clky]:
+                for bi in self.clusters_dic[clky]:
+                    diameter = max(self.euclid_distance(ai, bi), diameter)
+                for nonclky in self.clusters_dic:
+                    if nonclky != clky:
+                        for ci in self.clusters_dic[nonclky]:
+                            separation = min(self.euclid_distance(ai, ci), separation)
+            dunn_value[clky] = separation/diameter
+        return dunn_value
+
+    def determine_purity(self):
+        purity_val = 0
+
+        total_instance = 0
+
+        for clky in self.clusters_dic:
+            tmp_dic = dict()
+            total_instance += len(self.clusters_dic[clky])
+            for val_lst in self.clusters_dic[clky]:
+                for val in val_lst:
+                    if self.class_label[val] not in tmp_dic:
+                        tmp_dic[self.class_label[val]] = 0
+                    tmp_dic[self.class_label[val]] += 1
+            mx_val = 0
+            for cls in tmp_dic:
+                mx_val = max(mx_val, tmp_dic[cls])
+
+            purity_val += mx_val
+        return purity_val / total_instance
+#
+#
+# kk = k_means(3, 'dataset/Iris/iris.txt', '')
+# # kk = k_means(5,'../k_mean/WholeSale/Wholesale.csv')
+# # kk = k_means(3,'../DecisionTree/Dataset/wine/wine.data')
+#
+# kk.k_means_process(kk.K)
+# sil_val , dun_val = kk.quality_function()
+# print(sil_val, dun_val, ' Quality..')
