@@ -1,3 +1,4 @@
+import copy
 
 import numpy as np
 import csv
@@ -9,7 +10,7 @@ class k_means:
         self.db = list()
         self.clusters = list()  # or dict()
         self.centers = list()     # or dict()
-
+        self.cluster_dic = dict()
         self.read_file(filename)
 
 
@@ -105,12 +106,13 @@ class k_means:
 
 
             # print(centroids)
-            terminate = self.closing_condition(centroids,new_centroids)
+            terminate = self.closing_condition(centroids, new_centroids)
             if terminate:
                 print('Terminating k-means')
                 break
             centroids = new_centroids
-
+            self.cluster_dic = copy.deepcopy(clusters)
+        print(self.cluster_dic)
 
     def euclid_distance(self, data_a,data_b):
         a = np.array(data_a)
@@ -132,7 +134,7 @@ class k_means:
     def quality_function(self):
         pass
 
-kk = k_means(3,'../BayesianClassification/Dataset/Iris/iris.data')
+kk = k_means(3, 'dataset/Iris/iris.data')
 # kk = k_means(5,'../k_mean/WholeSale/Wholesale customers data.csv')
 # kk = k_means(3,'../DecisionTree/Dataset/wine/wine.data')
 

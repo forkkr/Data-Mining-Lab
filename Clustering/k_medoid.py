@@ -25,6 +25,8 @@ class Medoid():
     mn_hf = dict()
     mf = dict()
 
+    clusters = dict()
+
     def __init__(self, kv, af, of):
         self.k_value = kv
         self.attr_file = open(af, 'r')
@@ -37,7 +39,7 @@ class Medoid():
             self.attr_labels.append(attrs[0])
             self.attr_type[attrs[0]] = int(attrs[1])
         for tpl in self.object_file:
-            obj = tpl.split(',')
+            obj = tpl.split(' ')
             self.objects.append(obj)
 
         self.num_obj = len(self.objects)
@@ -226,11 +228,79 @@ class Medoid():
         print(self.repr_id)
         print('Total Cost: ', cur_cost)
         prev_cost = cur_cost+111111111111
+        prev_set = []
         print('Before swapping: ', self.repr_set, self.non_pr_set)
-        while prev_cost > cur_cost:
-            prev_cost = cur_cost
+        while prev_set != self.repr_set:
+            prev_cost = copy.deepcopy(cur_cost)
+            prev_set = copy.deepcopy(self.repr_set)
             cur_cost = self.swap(cur_cost)
+            print(prev_set, self.repr_set)
+
         print('After swapping: ', self.repr_set, self.non_pr_set)
-        print(self.repr_id)
+        # print(self.repr_id)
         print('Total Cost: ', cur_cost)
-        pass
+        for cr in self.repr_set:
+            self.clusters[cr] = []
+            self.clusters[cr].append(cr)
+        for ncr in self.non_pr_set:
+            self.clusters[self.repr_id[ncr]].append(ncr)
+        for clky in self.clusters:
+            print(clky, ':', self.clusters[clky])
+        s_co = self.silhouette_coefficient()
+        for clky in s_co:
+            print(s_co[clky], ' for ', clky)
+        return
+
+    def silhouette_coefficient(self):
+        a_value = dict()
+        b_value = dict()
+        s_value = dict()
+        for clky in self.clusters:
+            a_value[clky] = 5050
+            b_value[clky] = 5050
+            s_value[clky] = 0
+            for val_i in self.clusters[clky]:
+                ind_a = 0.0
+                for val_j in self.clusters[clky]:
+                    ind_a += self.find_dissimilarity(val_i, val_j)
+
+                ind_a /= (len(self.clusters[clky])-1)
+
+                ind_b = float('inf')
+                for not_clky in self.clusters:
+                    if clky != not_clky:
+                        tmp_b = 0
+                        for val_k in self.clusters[not_clky]:
+                            tmp_b += self.find_dissimilarity(val_i, val_k)
+                        tmp_b /= len(self.clusters[not_clky])
+                        ind_b = min(ind_b, tmp_b)
+
+            #     b_value[clky] += ind_b
+            #     a_value[clky] += ind_a
+            # b_value[clky] /= len(self.clusters[clky])
+            # a_value[clky] /= (len(self.clusters[clky])-1)
+            #     if (ind_b - ind_a)/(max(ind_b, ind_a)) < 0:
+            #         print(ind_a, ind_b)
+                s_value[clky] += (ind_b - ind_a)/(max(ind_b, ind_a))
+            s_value[clky] /= (len(self.clusters[clky]))
+
+        # print(b_value, a_value, s_value)
+        return s_value
+
+    def dunn_index(self):
+        dunn_value = dict()
+        for clky in self.clusters:
+            diameter = float('-inf')
+            separation = float('inf')
+            for ai in self.clusters[clky]:
+                for bi in self.clusters[clky]:
+                    diameter = max(self.find_dissimilarity(ai, bi), diameter)
+                for nonclky in self.clusters:
+                    if nonclky != clky:
+                        for ci in self.clusters[nonclky]:
+                            separation = min(self.find_dissimilarity(ai, ci), separation)
+            dunn_value[clky] = separation/diameter
+        return dunn_value
+
+
+
