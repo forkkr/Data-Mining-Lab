@@ -72,11 +72,13 @@ class Medoid():
 
         for tpl in self.attr_file:
             # print(tpl)
+            tpl = tpl.replace('\n','').replace('\r','').strip()
             attrs = tpl.split(' ')
             # print(attrs, ' AHHHH')
             self.attr_labels.append(attrs[0])
             self.attr_type[attrs[0]] = int(attrs[1])
         for tpl in self.object_file:
+            tpl = tpl.replace('\n', '').replace('\r', '').strip()
             obj = tpl.split(',')
             self.objects.append(obj)
 
