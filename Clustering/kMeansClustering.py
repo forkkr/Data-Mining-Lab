@@ -56,7 +56,7 @@ class k_means:
         # centre_ids = np.random.randint(0,len(self.db),k)
         centre_ids = np.random.choice(range(len(self.db)), k, replace=False)
         centroids = list()
-        print(centre_ids)
+        # print(centre_ids)
         for ci in centre_ids:
             center = self.db[ci]
             # centroids.append(self.db[ci])
@@ -76,7 +76,7 @@ class k_means:
         clusters_tupleId = dict()
 
         while terminate is False:
-            print('---', iteration)
+            # print('---', iteration)
             iteration += 1
             clusters = dict()
             clusters_tupleId = dict()
@@ -118,25 +118,25 @@ class k_means:
                 #       # , clusters[curr_centr]
                 #       , '|',len(clusters[curr_centr]),'|'
                 #       )
-                print(pfmt.format(str(curr_centr), str(len(clusters[curr_centr]))), end='')
-                print(centroids[curr_centr])
+                # print(pfmt.format(str(curr_centr), str(len(clusters[curr_centr]))), end='')
+                # print(centroids[curr_centr])
 
                 new_centroids.append(np.mean(clusters[curr_centr], axis=0))
 
             # print(centroids)
             terminate = self.closing_condition(centroids, new_centroids)
             if terminate:
-                print('Terminating k-means')
+                # print('Terminating k-means')
                 break
             centroids = new_centroids
             self.clusters_dic = copy.deepcopy(clusters)
-        print(self.clusters_dic)
+        # print(self.clusters_dic)
 
         self.clusterId_tupleId = clusters_tupleId
-        print('##########')
-        print('cluster id : tuple ids', self.clusterId_tupleId)
-        print('...')
-        print('id=0', self.clusterId_tupleId[0])
+        # print('##########')
+        # print('cluster id : tuple ids', self.clusterId_tupleId)
+        # print('...')
+        # print('id=0', self.clusterId_tupleId[0])
 
     def euclid_distance(self, data_a, data_b):
         a = np.array(data_a)
@@ -234,14 +234,14 @@ class k_means:
 
         total_instance = 0
 
-        for clky in self.clusters_dic:
+        for clky in self.clusterId_tupleId:
             tmp_dic = dict()
-            total_instance += len(self.clusters_dic[clky])
-            for val_lst in self.clusters_dic[clky]:
-                for val in val_lst:
-                    if self.class_label[val] not in tmp_dic:
-                        tmp_dic[self.class_label[val]] = 0
-                    tmp_dic[self.class_label[val]] += 1
+            total_instance += len(self.clusterId_tupleId[clky])
+            for val in self.clusterId_tupleId[clky]:
+                # for val in val_lst:
+                if self.class_label[val] not in tmp_dic:
+                    tmp_dic[self.class_label[val]] = 0
+                tmp_dic[self.class_label[val]] += 1
             mx_val = 0
             for cls in tmp_dic:
                 mx_val = max(mx_val, tmp_dic[cls])

@@ -270,7 +270,7 @@ class Medoid():
         self.process_data()
         self.initialize()
         cur_cost = self.assign()
-        print(self.repr_id)
+        # print(self.repr_id)
         # print('Total Cost: ', cur_cost)
         prev_cost = cur_cost+111111111111
         prev_set = []
@@ -279,7 +279,7 @@ class Medoid():
             prev_cost = copy.deepcopy(cur_cost)
             prev_set = copy.deepcopy(self.repr_set)
             cur_cost = self.swap(cur_cost)
-            print(prev_set, self.repr_set)
+            # print(prev_set, self.repr_set)
 
         # print('After swapping: ', self.repr_set, self.non_pr_set)
         # print(self.repr_id)
@@ -289,8 +289,8 @@ class Medoid():
             self.clusters[cr].append(cr)
         for ncr in self.non_pr_set:
             self.clusters[self.repr_id[ncr]].append(ncr)
-        for clky in self.clusters:
-            print(clky, ':', len(self.clusters[clky]))
+        # for clky in self.clusters:
+        #     print(clky, ':', len(self.clusters[clky]))
         s_co = self.silhouette_coefficient()
         sum_s_co = 0
         cls_total = 0
