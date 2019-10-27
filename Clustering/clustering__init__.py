@@ -3,7 +3,6 @@ import time
 from Clustering.kMeansClustering import k_means
 from Clustering.k_medoid import Medoid
 
-
 if __name__ == '__main__':
 
     # attr_file = 'dataset/Iris/iris.attr'
@@ -24,17 +23,32 @@ if __name__ == '__main__':
     # print('Total time: ', end_time-start_time)
 
     file = [
-        [True, 'dataset/Iris/iris.attr', '../Clustering/dataset/Iris/iris.data', '../Clustering/dataset/Iris/iris.class'],
-            [ True, '../Clustering/dataset/glass/glass.attr', '../Clustering/dataset/glass/glass.data', '../Clustering/dataset/glass/glass.class'],
-            [True, '../Clustering/dataset/diabetes/diabetes.attr', '../Clustering/dataset/diabetes/diabetes.data', '../Clustering/dataset/diabetes/diabetes.class'],
-            [True, '../Clustering/dataset/banknote/banknote.attr', '../Clustering/dataset/banknote/banknote.data', '../Clustering/dataset/banknote/banknote.class'],
-            [True, '../Clustering/dataset/aggregation/Aggregation.attr', '../Clustering/dataset/aggregation/Aggregation.data', '../Clustering/dataset/aggregation/Aggregation.class'],
-            [False, '../Clustering/dataset/WholeSale/wholesale.attr', '../Clustering/dataset/WholeSale/Wholesale.csv', '../Clustering/dataset/WholeSale/wholesale.class']
+        [True, 'dataset/Iris/iris.attr', '../Clustering/dataset/Iris/iris.data',
+         '../Clustering/dataset/Iris/iris.class', 'Iris'],
+        [True, '../Clustering/dataset/glass/glass.attr', '../Clustering/dataset/glass/glass.data',
+         '../Clustering/dataset/glass/glass.class', 'Glass'],
+        [True, '../Clustering/dataset/diabetes/diabetes.attr', '../Clustering/dataset/diabetes/diabetes.data',
+         '../Clustering/dataset/diabetes/diabetes.class', 'Diabetes'],
+        [True, '../Clustering/dataset/banknote/banknote.attr', '../Clustering/dataset/banknote/banknote.data',
+         '../Clustering/dataset/banknote/banknote.class', 'Banknote'],
+        [True, '../Clustering/dataset/aggregation/Aggregation.attr',
+         '../Clustering/dataset/aggregation/Aggregation.data', '../Clustering/dataset/aggregation/Aggregation.class',
+         'Aggregation'],
+        [False, '../Clustering/dataset/WholeSale/wholesale.attr', '../Clustering/dataset/WholeSale/Wholesale.csv',
+         '../Clustering/dataset/WholeSale/wholesale.class', 'Wholesale']
     ]
+
+    result = open('result.csv', 'a')
+    result.close()
+
+    buff = 'dataset, k, kmd_sil_co, kmd_purity, kmd_dun_co, kmd_time, kmn_sil_co, kmn_purity, kmn_dun_co, kmn_time'
+    # result.write(buff+'\n')
 
     for tup in file:
         # print(tup[2])
-        for k in range(2, 3):
+        for k in range(2, 10):
+            data = [tup[4], str(k)]
+            print('Dataset', tup[4], 'k', k)
             kmd = Medoid(k, tup[1], tup[2], tup[3])
             start_time = time.time()
             if tup[0] == True:
@@ -43,9 +57,13 @@ if __name__ == '__main__':
                 kmd_sil_co, kmd_dun_co = kmd.run_algorithm(tup[0])
                 kmd_purity = 0
             end_time = time.time()
-            kmd_time = end_time-start_time
+            kmd_time = end_time - start_time
 
             print('KMD: ', kmd_sil_co, kmd_purity, kmd_dun_co, kmd_time)
+            data.append(kmd_sil_co)
+            data.append(kmd_purity)
+            data.append(kmd_dun_co)
+            data.append(kmd_time)
 
             kk = k_means(k, tup[2], tup[3])
             start_time = time.time()
@@ -59,8 +77,16 @@ if __name__ == '__main__':
             kmn_time = end_time - start_time
 
             print('KMN :', kmn_sil_co, kmn_purity, kmn_dun_co, kmn_time)
+            data.append(kmn_sil_co)
+            data.append(kmn_purity)
+            data.append(kmn_dun_co)
+            data.append(kmn_time)
 
+            result = open('result.csv', 'a')
+            for d in data:
+                result.write(str(d)+', ')
+            result.write('\n')
+            result.close()
             print('\n ------------------------------ \n')
-
 
 
