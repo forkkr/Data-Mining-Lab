@@ -3,16 +3,17 @@ import copy
 import numpy as np
 import csv
 
-class k_means:
 
+class k_means:
     class_label = dict()
 
-    def __init__(self,k,filename, cls_file):
+    def __init__(self, k, filename, cls_file):
         self.K = k
         self.db = list()
         self.clusters = list()  # or dict()
-        self.centers = list()     # or dict()
+        self.centers = list()  # or dict()
         self.clusters_dic = dict()
+        self.clusterId_tupleId = dict()
         self.read_file(filename)
         cls_file = open(cls_file, 'r')
 
@@ -21,13 +22,12 @@ class k_means:
             self.class_label[id] = cls
             id += 1
 
-
     def read_file(self, filename):
-        file  = open(filename,'r')
+        file = open(filename, 'r')
 
         for tuple in file:
-            data = tuple.replace('\n','').replace('\r','').strip()
-            if data=='' or data is None:
+            data = tuple.replace('\n', '').replace('\r', '').strip()
+            if data == '' or data is None:
                 break
 
             d = data.split(',')
@@ -49,7 +49,7 @@ class k_means:
         # print(self.npdb[0][0])
         file.close()
 
-    def k_means_process(self,k):
+    def k_means_process(self, k):
 
         # initial centroids
 
@@ -61,27 +61,33 @@ class k_means:
             center = self.db[ci]
             # centroids.append(self.db[ci])
             while center in centroids:
-                center = self.db[ci%len(self.db)]
+                center = self.db[ci % len(self.db)]
             centroids.append(center)
 
         print('___')
 
-
         pfmt = '{0:5} - {1:5} - '
         # print('Cluster ID', 'Center', 'Cluster Length', '_________________')
-        print(pfmt.format('Cluster ID','Cluster Length - Centroid'))
+        print(pfmt.format('Cluster ID', 'Cluster Length - Centroid'))
 
         terminate = False
         iteration = 1
+        clusters = dict()
+        clusters_tupleId = dict()
+
         while terminate is False:
-            print('---',iteration)
-            iteration+=1
+            print('---', iteration)
+            iteration += 1
             clusters = dict()
+            clusters_tupleId = dict()
             for ci in range(len(centroids)):
                 # print(ci)
                 clusters[ci] = []
+                clusters_tupleId[ci] = []
             # assigning data-objects
-            for di in self.db:
+            for tuple_id in range(0, len(self.db)):
+                # for di in self.db:
+                di = self.db[tuple_id]
                 ci_dst = dict()
                 for ci in range(len(centroids)):
                     ci_dst[ci] = self.euclid_distance(di, centroids[ci])
@@ -95,10 +101,15 @@ class k_means:
                 # print('FOUND',mycluster,centroids[mycluster])
 
                 cluster_members = list()
+                cluster_memberIds = list()
                 if clusters.get(mycluster) is not None:
                     cluster_members = clusters[mycluster]
+                    cluster_memberIds = clusters_tupleId[mycluster]
                 cluster_members.append(di)
+                cluster_memberIds.append(tuple_id)
+
                 clusters[mycluster] = cluster_members
+                clusters_tupleId[mycluster] = cluster_memberIds
 
             # updte cluster centroids
             new_centroids = list()
@@ -107,11 +118,10 @@ class k_means:
                 #       # , clusters[curr_centr]
                 #       , '|',len(clusters[curr_centr]),'|'
                 #       )
-                print(pfmt.format(str(curr_centr), str(len(clusters[curr_centr]))),end='')
+                print(pfmt.format(str(curr_centr), str(len(clusters[curr_centr]))), end='')
                 print(centroids[curr_centr])
 
                 new_centroids.append(np.mean(clusters[curr_centr], axis=0))
-
 
             # print(centroids)
             terminate = self.closing_condition(centroids, new_centroids)
@@ -122,17 +132,23 @@ class k_means:
             self.clusters_dic = copy.deepcopy(clusters)
         print(self.clusters_dic)
 
-    def euclid_distance(self, data_a,data_b):
+        self.clusterId_tupleId = clusters_tupleId
+        print('##########')
+        print('cluster id : tuple ids', self.clusterId_tupleId)
+        print('...')
+        print('id=0', self.clusterId_tupleId[0])
+
+    def euclid_distance(self, data_a, data_b):
         a = np.array(data_a)
         b = np.array(data_b)
-        dist = np.linalg.norm(a-b)
+        dist = np.linalg.norm(a - b)
         return dist
 
-    def closing_condition(self,prev_centroids,new_centroids):
+    def closing_condition(self, prev_centroids, new_centroids):
         terminate = True
         for i in range(len(prev_centroids)):
-            dist = self.euclid_distance(prev_centroids[i],new_centroids[i])
-            if dist>0.01:
+            dist = self.euclid_distance(prev_centroids[i], new_centroids[i])
+            if dist > 0.01:
                 terminate = False
 
         return terminate
@@ -157,7 +173,7 @@ class k_means:
         # print(dun_co)
         # print(sum_sil_co, count_total, sum_dun_co, count_total_dun)
         if purity == False:
-            return sum_sil_co/count_total , sum_dun_co/count_total_dun
+            return sum_sil_co / count_total, sum_dun_co / count_total_dun
         else:
             return sum_sil_co / count_total, sum_dun_co / count_total_dun, self.determine_purity()
 
@@ -175,7 +191,7 @@ class k_means:
                 for val_j in self.clusters_dic[clky]:
                     ind_a += self.euclid_distance(val_i, val_j)
 
-                ind_a /= (len(self.clusters_dic[clky])-1)
+                ind_a /= (len(self.clusters_dic[clky]) - 1)
 
                 ind_b = float('inf')
                 for not_clky in self.clusters_dic:
@@ -186,13 +202,13 @@ class k_means:
                         tmp_b /= len(self.clusters_dic[not_clky])
                         ind_b = min(ind_b, tmp_b)
 
-            #     b_value[clky] += ind_b
-            #     a_value[clky] += ind_a
-            # b_value[clky] /= len(self.clusters[clky])
-            # a_value[clky] /= (len(self.clusters[clky])-1)
-            #     if (ind_b - ind_a)/(max(ind_b, ind_a)) < 0:
-            #         print(ind_a, ind_b)
-                s_value[clky] += (ind_b - ind_a)/(max(ind_b, ind_a))
+                #     b_value[clky] += ind_b
+                #     a_value[clky] += ind_a
+                # b_value[clky] /= len(self.clusters[clky])
+                # a_value[clky] /= (len(self.clusters[clky])-1)
+                #     if (ind_b - ind_a)/(max(ind_b, ind_a)) < 0:
+                #         print(ind_a, ind_b)
+                s_value[clky] += (ind_b - ind_a) / (max(ind_b, ind_a))
             # s_value[clky] /= (len(self.clusters_dic[clky]))
 
         # print(b_value, a_value, s_value)
@@ -210,7 +226,7 @@ class k_means:
                     if nonclky != clky:
                         for ci in self.clusters_dic[nonclky]:
                             separation = min(self.euclid_distance(ai, ci), separation)
-            dunn_value[clky] = separation/diameter
+            dunn_value[clky] = separation / diameter
         return dunn_value
 
     def determine_purity(self):
@@ -232,6 +248,8 @@ class k_means:
 
             purity_val += mx_val
         return purity_val / total_instance
+
+
 #
 #
 # kk = k_means(3, 'dataset/Iris/iris.txt', '')
@@ -241,3 +259,5 @@ class k_means:
 # kk.k_means_process(kk.K)
 # sil_val , dun_val = kk.quality_function()
 # print(sil_val, dun_val, ' Quality..')
+# kk = k_means(3, '../Clustering/dataset/WholeSale/Wholesale.csv')
+# kk.k_means_process(kk.K)
