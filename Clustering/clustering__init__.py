@@ -25,20 +25,22 @@ if __name__ == '__main__':
     file = [
         [True, 'dataset/Iris/iris.attr', '../Clustering/dataset/Iris/iris.data',
          '../Clustering/dataset/Iris/iris.class', 'Iris'],
-        [True, '../Clustering/dataset/glass/glass.attr', '../Clustering/dataset/glass/glass.data',
-         '../Clustering/dataset/glass/glass.class', 'Glass'],
-        [True, '../Clustering/dataset/diabetes/diabetes.attr', '../Clustering/dataset/diabetes/diabetes.data',
-         '../Clustering/dataset/diabetes/diabetes.class', 'Diabetes'],
-        [True, '../Clustering/dataset/banknote/banknote.attr', '../Clustering/dataset/banknote/banknote.data',
-         '../Clustering/dataset/banknote/banknote.class', 'Banknote'],
-        [True, '../Clustering/dataset/aggregation/Aggregation.attr',
-         '../Clustering/dataset/aggregation/Aggregation.data', '../Clustering/dataset/aggregation/Aggregation.class',
-         'Aggregation'],
-        [False, '../Clustering/dataset/WholeSale/wholesale.attr', '../Clustering/dataset/WholeSale/Wholesale.csv',
-         '../Clustering/dataset/WholeSale/wholesale.class', 'Wholesale']
+        # [True, '../Clustering/dataset/glass/glass.attr', '../Clustering/dataset/glass/glass.data',
+        #  '../Clustering/dataset/glass/glass.class', 'Glass'],
+        # [True, '../Clustering/dataset/diabetes/diabetes.attr', '../Clustering/dataset/diabetes/diabetes.data',
+        #  '../Clustering/dataset/diabetes/diabetes.class', 'Diabetes'],
+        # [True, '../Clustering/dataset/banknote/banknote.attr', '../Clustering/dataset/banknote/banknote.data',
+        #  '../Clustering/dataset/banknote/banknote.class', 'Banknote'],
+        # [True, '../Clustering/dataset/aggregation/Aggregation.attr','../Clustering/dataset/aggregation/Aggregation.data', '../Clustering/dataset/aggregation/Aggregation.class','Aggregation']
+        # [False, '../Clustering/dataset/WholeSale/wholesale.attr', '../Clustering/dataset/WholeSale/Wholesale.csv',
+        #  '../Clustering/dataset/WholeSale/wholesale.class', 'Wholesale']
+        # [False, '../Clustering/dataset/breast/breast.attr', '../Clustering/dataset/breast/breast.data',
+        #  '../Clustering/dataset/breast/breast.class', 'Breast Cancer']
+
     ]
 
-    result = open('result.csv', 'a')
+    resultFile = 'result_iris_x.csv'
+    result = open(resultFile, 'a')
     result.close()
 
     buff = 'dataset, k, kmd_sil_co, kmd_purity, kmd_dun_co, kmd_time, kmn_sil_co, kmn_purity, kmn_dun_co, kmn_time'
@@ -46,9 +48,10 @@ if __name__ == '__main__':
 
     for tup in file:
         # print(tup[2])
-        for k in range(2, 10):
+        for k in [20,50,100,150]:
+            # k = 3
             data = [tup[4], str(k)]
-            print('Dataset', tup[4], 'k', k)
+            print( 'Dataset', tup[4], 'k', k)
             kmd = Medoid(k, tup[1], tup[2], tup[3])
             start_time = time.time()
             if tup[0] == True:
@@ -82,11 +85,9 @@ if __name__ == '__main__':
             data.append(kmn_dun_co)
             data.append(kmn_time)
 
-            result = open('result.csv', 'a')
+            result = open(resultFile, 'a')
             for d in data:
-                result.write(str(d)+', ')
+                result.write(str(d) + ', ')
             result.write('\n')
             result.close()
             print('\n ------------------------------ \n')
-
-
